@@ -9,7 +9,7 @@ const useAxios = () => {
   const navigate = useNavigate();
 
   const instance = axios.create({
-    timeout: 1000,
+    timeout: 5000,
   });
 
   let isRefreshing = false;
