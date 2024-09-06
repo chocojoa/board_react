@@ -24,7 +24,7 @@ const SignIn = () => {
       data,
     })
       .then((response) => {
-        dispatch(authSlice.actions.signIn(response.data));
+        dispatch(authSlice.actions.signIn(response.data.data));
         navigate("/");
       })
       .catch((data) => {
