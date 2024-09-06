@@ -1,13 +1,19 @@
 import store from "@/store";
 import authSlice from "@/store/authSlice";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const useAxios = () => {
   const token = store.getState().auth.token;
+  const navigate = useNavigate();
 
   const instance = axios.create({
     timeout: 1000,
   });
+
+  let isRefreshing = false;
+  let refreshSubscribers = [];
 
   //요청 인터셉터
   instance.interceptors.request.use(
@@ -22,49 +28,66 @@ const useAxios = () => {
     }
   );
 
+  //응답 인터셉터
   instance.interceptors.response.use(
     (response) => {
       return response;
     },
     async (error) => {
-      const errorCode = error.response.data.errorCode;
-      const status = error.response.status;
-      if (status === 401) {
-        if (errorCode === "EXPIRED_TOKEN") {
-          await axios({
-            method: "POST",
-            url: "/api/auth/reissue",
-            data: {
+      const originalRequest = error.config;
+      if (
+        error.response &&
+        error.response.status === 401 &&
+        error.response.data.errorCode === "JWT_TOKEN_EXPIRED"
+      ) {
+        // 토큰 갱신 중인지 확인
+        if (!isRefreshing) {
+          isRefreshing = true;
+          try {
+            const { data } = await axios.post("/api/auth/reissue", {
               refreshToken: token.refreshToken,
-            },
-          })
-            .then((response) => {
-              store.dispatch(authSlice.actions.signIn(response.data));
-              error.config.headers = {
-                Authorization: `Bearer ${response.data.token.accessToken}`,
-              };
-              // 재요청
-              return axios.request(error.config);
-            })
-            .then(() => {
-              window.location.reload();
-            })
-            .catch((error) => {
-              const reissueErrorCode = error.response.data.errorCode;
-              if (reissueErrorCode === "EXPIRED_TOKEN") {
-                localStorage.clear();
-                alert("토큰이 만료되어 로그아웃 되었습니다.");
-              } else {
-                alert("error");
-              }
             });
-        } else {
-          alert(error);
+            // 새로운 토큰을 상태에 저장
+            store.dispatch(authSlice.actions.signIn(data.data));
+
+            // 대기 중인 요청들에게 갱신된 토큰을 제공
+            refreshSubscribers.forEach((callback) =>
+              callback(data.data.token.accessToken)
+            );
+
+            refreshSubscribers = [];
+
+            // 갱신된 토큰을 원래 요청에 설정
+            originalRequest.headers[
+              "Authorization"
+            ] = `Bearer ${data.data.token.accessToken}`;
+
+            isRefreshing = false;
+
+            return axios(originalRequest);
+          } catch (err) {
+            Swal.fire({
+              icon: "warning",
+              title: "사용시간이 만료되어 로그아웃 되었습니다.",
+              timer: 2000,
+            }).then(() => {
+              isRefreshing = false;
+              store.dispatch(authSlice.actions.signOut());
+              navigate("/");
+              return Promise.reject(err);
+            });
+          }
         }
-        return Promise.reject(error);
-      } else {
-        return Promise.reject(error);
+
+        // 다른 요청들이 리프레시 중일 때는 해당 Promise가 끝날 때까지 대기
+        return new Promise((resolve) => {
+          refreshSubscribers.push((accessToken) => {
+            originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
+            resolve(axios(originalRequest));
+          });
+        });
       }
+      return Promise.reject(error);
     }
   );
   return instance;
