@@ -2,7 +2,7 @@ import PrivateLayout from "@/components/layouts/PrivateLayout";
 import PublicLayout from "@/components/layouts/PublicLayout";
 import SignIn from "@/pages/auth/SignIn";
 import SignUp from "@/pages/auth/SignUp";
-import Board from "@/pages/board/Board";
+import Post from "@/pages/post/Post";
 import NotFound from "@/pages/common/NotFound";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import Profile from "@/pages/user/Profile";
@@ -36,7 +36,7 @@ const CommonRouter = () => {
             >
               <Route path="/" element={<Navigate replace to="/dashboard" />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/board" element={<Board />} />
+              <Route path="/post" element={<Post />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
             <Route path="/*" element={<NotFound />} />

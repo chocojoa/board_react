@@ -1,35 +1,22 @@
 import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
+} from "@/components/ui/table";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
-const DataTable = ({
-  columns,
-  data,
-  onPaginationChange,
-  rowCount,
-  pagination,
-  onRowClick,
-}) => {
+const DataTable = ({ columns, data }) => {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    rowCount,
-    onPaginationChange,
-    state: {
-      pagination,
-    },
   });
 
   return (
@@ -42,11 +29,8 @@ const DataTable = ({
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
-                      key={headerGroup.id}
-                      style={{
-                        minWidth: header.columns.columnDef.size,
-                        maxWidth: header.columns.columnDef.size,
-                      }}
+                      key={header.id}
+                      style={{ width: `${header.getSize()}px` }}
                     >
                       {header.isPlaceholder
                         ? null
@@ -66,17 +50,9 @@ const DataTable = ({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => onRowClick(row)}
-                  className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{
-                        minWidth: cell.column.columnDef.size,
-                        maxWidth: cell.column.columnDef.size,
-                      }}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -87,7 +63,10 @@ const DataTable = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colspan={columns.length} className="h-8 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-12 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>

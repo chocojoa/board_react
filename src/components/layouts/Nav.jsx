@@ -1,4 +1,5 @@
 import authSlice from "@/store/authSlice";
+import { LayoutDashboard, StickyNote } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -18,7 +19,7 @@ const Nav = () => {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0 font-bold">
-                <Link to="/">React Board</Link>
+                <Link to="/">React 연습화면</Link>
               </div>
               <div className="hidden md:block">
                 <div className="ml-10 flex items-baseline space-x-4">
@@ -27,13 +28,19 @@ const Nav = () => {
                     className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-slate-100 hover:text-black"
                     aria-current="page"
                   >
-                    Dashboard
+                    <div className="flex items-center">
+                      <LayoutDashboard size={16} />
+                      <span className="ml-2">대시보드</span>
+                    </div>
                   </Link>
                   <Link
-                    to="/board"
+                    to="/post"
                     className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-slate-100 hover:text-black"
                   >
-                    Board
+                    <div className="flex items-center">
+                      <StickyNote size={16} />
+                      <span className="ml-2">자유게시판</span>
+                    </div>
                   </Link>
                 </div>
               </div>

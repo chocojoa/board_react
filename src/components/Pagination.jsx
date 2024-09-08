@@ -3,40 +3,44 @@ import { Button } from "./ui/button";
 const Pagination = ({ table }) => {
   return (
     <>
-      <div className="flex items-center justify-center space-x-2 py-4">
+      <footer className="pagination">
         <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.firstPage()}
           disabled={!table.getCanPreviousPage()}
+          onClick={() => table.setPageIndex(0)}
         >
-          {"<<"}
+          ⏪
         </Button>
         <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
+          onClick={table.previousPage}
         >
-          {"<"}
+          ◀️
+        </Button>
+        <span>{`page ${
+          table.getState().pagination.pageIndex + 1
+        } of ${table.getPageCount()}`}</span>
+        <Button disabled={!table.getCanNextPage()} onClick={table.nextPage}>
+          ▶️
         </Button>
         <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
+          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
         >
-          {">"}
+          ⏩
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.lastPage()}
-          disabled={!table.getCanNextPage()}
+        <span>Show: </span>
+        <select
+          value={table.getState().pageSize}
+          onChange={(e) => table.setPageSize(parseInt(e.target.value, 10))}
         >
-          {">>"}
-        </Button>
-      </div>
+          {[5, 10, 20].map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+        <span> items per page</span>
+      </footer>
     </>
   );
 };
