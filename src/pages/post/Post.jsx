@@ -6,57 +6,77 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import useAxios from "@/hooks/useAxios";
-import { useEffect, useState } from "react";
+import usePagination from "@/hooks/usePagination";
+import useSorting from "@/hooks/useSorting";
+import { useEffect, useMemo, useState } from "react";
 
 import { Link } from "react-router-dom";
 
 const Post = () => {
   const api = useAxios();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({
+    totalCount: 0,
+    dataList: [],
+  });
 
-  const columns = [
-    {
-      accessorKey: "rowNumber",
-      header: "번호",
-      size: 100,
-    },
-    {
-      accessorKey: "title",
-      header: "제목",
-      size: 400,
-    },
-    {
-      accessorKey: "viewCount",
-      header: "조회수",
-      size: 100,
-    },
-    {
-      accessorKey: "userName",
-      header: "작성자",
-      size: 100,
-    },
-    {
-      accessorKey: "createdDate",
-      header: "작성일",
-      size: 100,
-    },
-  ];
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "rowNumber",
+        header: "번호",
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: "title",
+        header: "제목",
+        size: 400,
+        enableSorting: true,
+      },
+      {
+        accessorKey: "viewCount",
+        header: "조회수",
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: "userName",
+        header: "작성자",
+        size: 100,
+        enableSorting: true,
+      },
+      {
+        accessorKey: "createdDate",
+        header: "작성일",
+        size: 100,
+        enableSorting: true,
+      },
+    ],
+    []
+  );
 
-  const retrievePosts = () => {
-    const pageIndex = 0;
-    const pageSize = 10;
+  const { pageIndex, pageSize, onPaginationChange, pagination } =
+    usePagination();
+
+  const { sorting, onSortingChange, field, order } = useSorting();
+
+  const retrievePosts = (pageIndex, pageSize, field, order) => {
+    const startIndex = pageIndex * pageSize;
 
     api({
-      url: `/api/boards/free/posts?pageIndex=${pageIndex}&pageSize=${pageSize}`,
+      url: `/api/boards/free/posts?startIndex=${startIndex}&pageSize=${pageSize}&sortColumn=${field}&sortDirection=${order}`,
       method: "GET",
     }).then((response) => {
-      setData(response.data.data.dataList);
+      setData({
+        totalCount: response.data.data.totalCount,
+        dataList: response.data.data.dataList,
+      });
     });
   };
 
   useEffect(() => {
-    retrievePosts();
-  }, []);
+    retrievePosts(pageIndex, pageSize, field, order);
+  }, [pagination, sorting]);
 
   return (
     <>
@@ -77,7 +97,15 @@ const Post = () => {
         <p className="text-lg font-bold">자유게시판</p>
       </div>
       <div className="py-6">
-        <DataTable columns={columns} data={data} />
+        <DataTable
+          columns={columns}
+          data={data.dataList}
+          totalCount={data.totalCount}
+          pagination={pagination}
+          onPaginationChange={onPaginationChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
+        />
       </div>
     </>
   );

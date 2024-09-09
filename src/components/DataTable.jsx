@@ -6,17 +6,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import Pagination from "./Pagination";
 
-const DataTable = ({ columns, data }) => {
+const DataTable = ({
+  columns,
+  data,
+  totalCount,
+  pagination,
+  onPaginationChange,
+  sorting,
+  onSortingChange,
+}) => {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    rowCount: totalCount,
+    manualPagination: true,
+    manualSorting: true,
+    onPaginationChange,
+    onSortingChange,
+    autoResetPageIndex: false,
+    state: {
+      pagination,
+      sorting,
+    },
   });
 
   return (
@@ -31,13 +51,27 @@ const DataTable = ({ columns, data }) => {
                     <TableHead
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
+                      {...(header.column.getCanSort()
+                        ? { onClick: header.column.getToggleSortingHandler() }
+                        : [])}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                      <div className="flex items-center select-none cursor-pointer">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                        {header.column.getIsSorted() === "asc" ? (
+                          <span className="ml-1">
+                            <ChevronUpIcon />
+                          </span>
+                        ) : header.column.getIsSorted() === "desc" ? (
+                          <span className="ml-1">
+                            <ChevronDownIcon />
+                          </span>
+                        ) : null}
+                      </div>
                     </TableHead>
                   );
                 })}
@@ -74,6 +108,7 @@ const DataTable = ({ columns, data }) => {
           </TableBody>
         </Table>
       </div>
+      <Pagination table={table} />
     </>
   );
 };
