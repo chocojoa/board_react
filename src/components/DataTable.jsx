@@ -1,34 +1,41 @@
 import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
+} from "@/components/ui/table";
+import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import Pagination from "./Pagination";
 
 const DataTable = ({
   columns,
   data,
-  onPaginationChange,
-  rowCount,
+  totalCount,
   pagination,
-  onRowClick,
+  onPaginationChange,
+  sorting,
+  onSortingChange,
 }) => {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    rowCount: totalCount,
     manualPagination: true,
-    rowCount,
+    manualSorting: true,
     onPaginationChange,
+    onSortingChange,
+    autoResetPageIndex: false,
     state: {
       pagination,
+      sorting,
     },
   });
 
@@ -42,18 +49,29 @@ const DataTable = ({
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
-                      key={headerGroup.id}
-                      style={{
-                        minWidth: header.columns.columnDef.size,
-                        maxWidth: header.columns.columnDef.size,
-                      }}
+                      key={header.id}
+                      style={{ width: `${header.getSize()}px` }}
+                      {...(header.column.getCanSort()
+                        ? { onClick: header.column.getToggleSortingHandler() }
+                        : [])}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                      <div className="flex items-center select-none cursor-pointer">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                        {header.column.getIsSorted() === "asc" ? (
+                          <span className="ml-1">
+                            <ChevronUpIcon />
+                          </span>
+                        ) : header.column.getIsSorted() === "desc" ? (
+                          <span className="ml-1">
+                            <ChevronDownIcon />
+                          </span>
+                        ) : null}
+                      </div>
                     </TableHead>
                   );
                 })}
@@ -66,17 +84,9 @@ const DataTable = ({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => onRowClick(row)}
-                  className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{
-                        minWidth: cell.column.columnDef.size,
-                        maxWidth: cell.column.columnDef.size,
-                      }}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -87,7 +97,10 @@ const DataTable = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colspan={columns.length} className="h-8 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-12 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -95,6 +108,7 @@ const DataTable = ({
           </TableBody>
         </Table>
       </div>
+      <Pagination table={table} />
     </>
   );
 };
