@@ -1,11 +1,18 @@
 import authSlice from "@/store/authSlice";
-import { LayoutDashboard, StickyNote } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { LayoutDashboard, Smile, StickyNote } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../ui/dropdown-menu";
+import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 
 const Nav = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
 
   const signOut = () => {
     dispatch(authSlice.actions.signOut());
@@ -14,85 +21,47 @@ const Nav = () => {
 
   return (
     <>
-      <nav className="border-b-[1px] shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <nav className="w-full border shadow-sm bg-white">
+        <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center">
+            <div className="flex">
               <div className="flex-shrink-0 font-bold">
                 <Link to="/">React 연습화면</Link>
               </div>
-              <div className="hidden md:block">
-                <div className="ml-10 flex items-baseline space-x-4">
-                  <Link
-                    to="/dashboard"
-                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-slate-100 hover:text-black"
-                    aria-current="page"
-                  >
-                    <div className="flex items-center">
-                      <LayoutDashboard size={16} />
-                      <span className="ml-2">대시보드</span>
-                    </div>
-                  </Link>
-                  <Link
-                    to="/post"
-                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-slate-100 hover:text-black"
-                  >
-                    <div className="flex items-center">
-                      <StickyNote size={16} />
-                      <span className="ml-2">자유게시판</span>
-                    </div>
-                  </Link>
-                </div>
+              <div className="flex flex-shrink-0 items-center space-x-6 mx-10 text-sm/[17px]">
+                <Link to="/dashboard">
+                  <div className="flex items-center w-full">
+                    <LayoutDashboard size={18} className="text-gray-500" />
+                    <span className="ml-2">대시보드</span>
+                  </div>
+                </Link>
+                <Link to="/boards/free/posts">
+                  <div className="flex items-center w-full">
+                    <StickyNote size={18} className="text-gray-500" />
+                    <span className="ml-2">자유게시판</span>
+                  </div>
+                </Link>
               </div>
             </div>
-            <div className="hidden md:block">
-              <div className="ml-4 flex items-center md:ml-6">
-                {/* Profile dropdown */}
-                <div className="relative ml-3 group">
-                  <div>
-                    <button
-                      type="button"
-                      className="relative flex max-w-ws items-center rounded-full text-sm"
-                      id="user-menu-button"
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                    >
-                      <span className="absolute -inset-1.5"></span>
-                      <span className="sr-only">Open user menu</span>
-                      <img
-                        className="h-8 w-8 rounded-full"
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                        alt=""
-                      />
-                    </button>
+            <div className="flex-shrink-0 text-sm">
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <div className="flex items-center">
+                    <Smile size={18} />
+                    <span className="ml-2">
+                      {user.userName} ({user.email})
+                    </span>
                   </div>
-                  <div
-                    className="absolute hidden group-hover:block dropdown-menu right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="user-menu-button"
-                    tabIndex="-1"
-                  >
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 mx-2 my-2 text-sm text-gray-700 hover:bg-slate-100 rounded-md"
-                      role="menuitem"
-                      tabIndex="-1"
-                    >
-                      Profile
-                    </Link>
-                    <Link
-                      to="#"
-                      className="block px-4 py-2 mx-2 my-2 text-sm text-gray-700 hover:bg-slate-100 rounded-md"
-                      role="menuitem"
-                      tabIndex="-1"
-                      onClick={signOut}
-                    >
-                      Sign out
-                    </Link>
-                  </div>
-                </div>
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>
+                    <Link to="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link onClick={signOut}>Sign out</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
