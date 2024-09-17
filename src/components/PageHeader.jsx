@@ -17,14 +17,14 @@ const PageHeader = ({ title, itemList }) => {
               <BreadcrumbItem>
                 <Link to="/">처음</Link>
               </BreadcrumbItem>
-              {itemList.map((item) => {
+              {itemList.map((item) => (
                 <Fragment key={item.url}>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
                     <Link to={item.url}>{item.name}</Link>
                   </BreadcrumbItem>
-                </Fragment>;
-              })}
+                </Fragment>
+              ))}
             </BreadcrumbList>
           </Breadcrumb>
         </div>

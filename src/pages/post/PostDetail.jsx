@@ -14,7 +14,7 @@ const PostDetail = () => {
   const [post, setPost] = useState({});
 
   const breadCrumbList = [
-    { url: `/categories/${categoryId}/posts`, name: `자유게시판` },
+    { url: `/categories/${categoryId}/posts`, name: "자유게시판" },
   ];
 
   const gotoEdit = () => {
@@ -41,39 +41,26 @@ const PostDetail = () => {
   return (
     <>
       <PageHeader title="자유게시판" itemList={breadCrumbList} />
-      <div className="py-4">
+      <div>
         <div>
-          <div className="flex items-center justify-between">
-            <div className="font-semibold">게시글 조회</div>
-            <div className="flex space-x-2">
-              <Button type="button" onClick={gotoEdit}>
-                수정
-              </Button>
-            </div>
-          </div>
-          <div>
-            <div className="px-2 py-2 my-2 border-b">
+          <div className="flex justify-between mx-1 pt-4 pb-2">
+            <div>
               <span className="font-semibold">{post.title}</span>
             </div>
-            <div className="px-2 py-2 my-2 border-b text-sm">
-              <div className="w-full pb-2">
-                <span>작성자: {post.author}</span>
-              </div>
-              <div className="w-full pb-2">
-                <span>작성일: {post.createdDate}</span>
-              </div>
-              <div className="w-full pb-2">
-                <span>조회수: {post.viewCount}</span>
-              </div>
+            <div className="space-x-2 text-sm">
+              <span>등록일: {post.createdDate}</span>
+              <span>작성자: {post.author}</span>
+              <span>조회수: {post.viewCount}</span>
             </div>
-            <div className="w-full px-2 py-2 border-b">
-              <p className="whitespace-pre-wrap">{post.content}</p>
-            </div>
+          </div>
+          <div className="w-full border rounded-sm px-2 py-2">
+            <p className="whitespace-pre-wrap">{post.content}</p>
           </div>
         </div>
       </div>
       <div className="flex w-full justify-end mt-4">
-        <div className="items-end">
+        <div className="items-end space-x-2">
+          <Button onClick={gotoEdit}>수정</Button>
           <Button onClick={gotoList}>목록</Button>
         </div>
       </div>
