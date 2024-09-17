@@ -1,9 +1,15 @@
-import useAxios from "@/hooks/useAxios";
-import authSlice from "@/store/authSlice";
-import { Baby } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+
+import authSlice from "@/store/authSlice";
+import useAxios from "@/hooks/useAxios";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Baby } from "lucide-react";
+
 import Swal from "sweetalert2";
 
 const SignIn = () => {
@@ -52,14 +58,9 @@ const SignIn = () => {
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
-                Email address
-              </label>
+              <Label htmlFor="email">Email address</Label>
               <div className="mt-2">
-                <input
+                <Input
                   id="email"
                   type="email"
                   {...register("email", {
@@ -73,7 +74,7 @@ const SignIn = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md py-1.5 px-2"
                 />
                 {errors.email && (
                   <span className="text-sm font-medium text-red-500">
@@ -85,12 +86,7 @@ const SignIn = () => {
 
             <div>
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Password
-                </label>
+                <Label htmlFor="password">Password</Label>
                 <div className="text-sm">
                   <a
                     href="#"
@@ -101,7 +97,7 @@ const SignIn = () => {
                 </div>
               </div>
               <div className="mt-2">
-                <input
+                <Input
                   id="password"
                   type="password"
                   {...register("password", {
@@ -111,7 +107,7 @@ const SignIn = () => {
                       message: "Password must be at least 8",
                     },
                   })}
-                  className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md py-1.5 px-2"
                 />
                 {errors.password && (
                   <span className="text-sm font-medium text-red-500">
@@ -122,21 +118,18 @@ const SignIn = () => {
             </div>
 
             <div>
-              <button
+              <Button
                 type="submit"
-                className="flex w-full justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+                className="flex w-full justify-center rounded-sm font-semibold"
               >
                 Sign in
-              </button>
+              </Button>
             </div>
           </form>
 
-          <p className="mt-10 text-center text-sm text-gray-500">
+          <p className="mt-10 text-center text-sm">
             Don&apos;t have account yet?{" "}
-            <Link
-              to="/auth/signUp"
-              className="font-semibold leading-6 text-gray-600 hover:text-gray-500"
-            >
+            <Link to="/auth/signUp" className="font-semibold">
               Sign up
             </Link>
           </p>

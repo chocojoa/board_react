@@ -79,15 +79,9 @@ const PostEdit = () => {
   return (
     <>
       <PageHeader title="자유게시판" itemList={breadCrumbList} />
-      <div className="py-4">
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <div className="py-4">
           <div>
-            <div className="flex items-center justify-between">
-              <div className="font-semibold">게시글 수정</div>
-              <div className="flex space-x-2">
-                <Button type="submit">저장</Button>
-              </div>
-            </div>
             <div>
               <div className="w-full items-center my-2 space-y-2">
                 <Label htmlFor="title">제목</Label>
@@ -121,13 +115,14 @@ const PostEdit = () => {
               </div>
             </div>
           </div>
-        </form>
-      </div>
-      <div className="flex w-full justify-end mt-4">
-        <div className="items-end">
-          <Button onClick={gotoList}>목록</Button>
         </div>
-      </div>
+        <div className="flex w-full justify-end mt-4">
+          <div className="items-end space-x-2">
+            <Button type="submit">저장</Button>
+            <Button onClick={gotoList}>목록</Button>
+          </div>
+        </div>
+      </form>
     </>
   );
 };
