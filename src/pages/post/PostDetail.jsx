@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import useAxios from "@/hooks/useAxios";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { CornerDownRight } from "lucide-react";
 
 const PostDetail = () => {
   const navigate = useNavigate();
@@ -12,6 +14,8 @@ const PostDetail = () => {
 
   const { categoryId, postId } = useParams();
   const [post, setPost] = useState({});
+  const [comment, setComment] = useState([]);
+  const [showReply, setShowReply] = useState(false);
 
   const breadCrumbList = [
     { url: `/categories/${categoryId}/posts`, name: "자유게시판" },
@@ -34,8 +38,19 @@ const PostDetail = () => {
     });
   };
 
+  const retrieveCommentList = () => {
+    api({
+      url: `/api/boards/${categoryId}/posts/${postId}/comments`,
+      method: "GET",
+    }).then((response) => {
+      console.log(response.data.data);
+      setComment(response.data.data);
+    });
+  };
+
   useEffect(() => {
     retrievePost();
+    retrieveCommentList();
   }, []);
 
   return (
@@ -64,6 +79,49 @@ const PostDetail = () => {
           <Button onClick={gotoList}>목록</Button>
         </div>
       </div>
+      <div>
+        {comment.map((c) => (
+          <Fragment key={c.id}>
+            <div className="flex w-full grid grid-cols-12 items-center space-x-2 py-2">
+              {c.step > 0 && (
+                <div className="text-center">
+                  <CornerDownRight />
+                </div>
+              )}
+              <div className="col-span-1 text-center">
+                <span>{c.author}</span>
+              </div>
+              <div className="col-span-9">
+                <span>{c.content}</span>
+              </div>
+              {c.step === 0 && (
+                <div className="text-center">
+                  <Button onClick={() => setShowReply(!showReply)}>
+                    {showReply ? "취소" : "댓글"}
+                  </Button>
+                </div>
+              )}
+              <div className="col-span-1">
+                <span>{c.createdDate}</span>
+              </div>
+            </div>
+            {showReply && (
+              <div className="flex w-full grid grid-cols-12 items-center space-x-2 py-2">
+                <div className="col-span-1 text-center">
+                  <span>댓글</span>
+                </div>
+                <div className="col-span-10">
+                  <Textarea row="3" />
+                </div>
+                <div className="col-span-1 text-center">
+                  <Button>저장</Button>
+                </div>
+              </div>
+            )}
+          </Fragment>
+        ))}
+      </div>
+      <div></div>
     </>
   );
 };
