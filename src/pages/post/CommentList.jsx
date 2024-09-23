@@ -14,40 +14,41 @@ const CommentList = ({ comments, categoryId, postId, retrieveCommentList }) => {
     }
   };
 
+  const handleCommentClose = () => {
+    setReplyCommentId(null);
+  };
+
   return (
     <Fragment>
       {comments.map((comment) => (
         <div key={comment.commentId}>
-          <div className="flex w-full grid grid-cols-12 items-center space-x-2 py-2 border-b">
-            <div className="col-span-1">
-              <div className="flex w-full space-x-2">
-                {comment.step > 0 && (
+          <div
+            style={{
+              marginLeft: comment.step > 0 ? comment.step * 2 + "em" : "",
+            }}
+          >
+            <div>
+              <div className="flex items-center justify-between border-b py-1">
+                <div className="flex items-center space-x-2">
+                  {comment.step > 0 && <CornerDownRight />}
+                  <span>{comment.author}</span>
                   <div>
-                    <CornerDownRight />
+                    <span className="whitespace-pre-wrap">
+                      {comment.content}
+                    </span>
                   </div>
-                )}
-                <div>{comment.author}</div>
-              </div>
-            </div>
-            <div className="col-span-10">
-              <div className="flex w-full items-center justify-between">
-                <div>
-                  <span className="whitespace-pre-wrap">{comment.content}</span>
                 </div>
-                {comment.step === 0 && (
-                  <div className="items-end">
-                    <Button
-                      size="sm"
-                      onClick={() => handleReplyClick(comment.commentId)}
-                    >
-                      {replyCommentId === comment.commentId ? "취소" : "댓글"}
-                    </Button>
-                  </div>
-                )}
+                <div className="space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleReplyClick(comment.commentId)}
+                  >
+                    {replyCommentId === comment.commentId ? "취소" : "댓글"}
+                  </Button>
+                  <span className="text-sm">{comment.createdDate}</span>
+                </div>
               </div>
-            </div>
-            <div className="col-span-1 text-sm">
-              <span>{comment.createdDate}</span>
             </div>
           </div>
           {replyCommentId === comment.commentId && (
@@ -56,6 +57,7 @@ const CommentList = ({ comments, categoryId, postId, retrieveCommentList }) => {
               postId={postId}
               parentCommentId={comment.commentId}
               retrieveCommentList={retrieveCommentList}
+              handleCommentClose={handleCommentClose}
             />
           )}
         </div>
