@@ -12,6 +12,7 @@ const CommentCreate = ({
   postId,
   parentCommentId = 0,
   retrieveCommentList,
+  handleCommentClose,
 }) => {
   const api = useAxios();
   const user = useSelector((state) => state.auth.user);
@@ -37,6 +38,9 @@ const CommentCreate = ({
       if (response.data.status === "success") {
         reset();
         retrieveCommentList();
+        if (typeof handleCommentClose === "function") {
+          handleCommentClose();
+        }
       }
     });
   };
