@@ -1,22 +1,37 @@
-import authSlice from "@/store/authSlice";
-import { LayoutDashboard, Smile, StickyNote } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+
+import authSlice from "@/store/authSlice";
+import useAxios from "@/hooks/useAxios";
+
+import { LayoutDashboard, Smile, StickyNote } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 
 const Nav = () => {
+  const api = useAxios();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth.user);
+  const auth = useSelector((state) => state.auth);
+  const user = auth.user;
 
   const signOut = () => {
-    dispatch(authSlice.actions.signOut());
-    navigate("/");
+    api({
+      url: "/api/auth/signOut",
+      method: "POST",
+      data: {
+        refreshToken: auth.token.refreshToken,
+      },
+    }).then((response) => {
+      if (response.data.status === "success") {
+        dispatch(authSlice.actions.signOut());
+        navigate("/");
+      }
+    });
   };
 
   return (

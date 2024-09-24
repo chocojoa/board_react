@@ -25,7 +25,7 @@ const SignIn = () => {
 
   const onSubmit = async (data) => {
     api({
-      url: "/api/auth/login",
+      url: "/api/auth/signIn",
       method: "POST",
       data,
     })
