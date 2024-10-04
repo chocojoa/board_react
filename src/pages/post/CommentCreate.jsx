@@ -34,13 +34,11 @@ const CommentCreate = ({
         content: data.content,
         userId: user.userId,
       },
-    }).then((response) => {
-      if (response.data.status === "success") {
-        reset();
-        retrieveCommentList();
-        if (typeof handleCommentClose === "function") {
-          handleCommentClose();
-        }
+    }).then(() => {
+      reset();
+      retrieveCommentList();
+      if (typeof handleCommentClose === "function") {
+        handleCommentClose();
       }
     });
   };

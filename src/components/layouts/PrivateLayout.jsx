@@ -4,7 +4,7 @@ import Nav from "./Nav";
 const PrivateLayout = () => {
   return (
     <>
-      <div className="bg-slate-50 h-max">
+      <div className="bg-slate-50 h-screen">
         <Nav />
         <main>
           <div className="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">

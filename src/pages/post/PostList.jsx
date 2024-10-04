@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import useAxios from "@/hooks/useAxios";
 import usePagination from "@/hooks/usePagination";
@@ -10,6 +10,8 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import DatePickerWithRange from "@/components/DataPickerWithRange";
+import { format } from "date-fns";
 
 const PostList = () => {
   const navigate = useNavigate();
@@ -19,6 +21,17 @@ const PostList = () => {
   const [data, setData] = useState({
     totalCount: 0,
     dataList: [],
+  });
+
+  const location = useLocation();
+  const paramsRef = useRef();
+  const searchParams = location.state ? location.state.searchCondition : null;
+
+  const [searchCondition, setSearchCondition] = useState({
+    title: searchParams ? searchParams.title : "",
+    author: searchParams ? searchParams.author : "",
+    startCreatedDate: "",
+    endCreatedDate: "",
   });
 
   const breadCrumbList = [
@@ -42,7 +55,10 @@ const PostList = () => {
           const categoryId = row.original.categoryId;
           const postId = row.original.postId;
           return (
-            <Link to={`/boards/${categoryId}/posts/${postId}`}>
+            <Link
+              to={`/boards/${categoryId}/posts/${postId}`}
+              state={{ searchCondition: paramsRef.current }}
+            >
               {row.getValue("title")}
             </Link>
           );
@@ -55,7 +71,7 @@ const PostList = () => {
         enableSorting: true,
       },
       {
-        accessorKey: "userName",
+        accessorKey: "author",
         header: "작성자",
         size: 100,
         enableSorting: true,
@@ -74,30 +90,34 @@ const PostList = () => {
     navigate(`/boards/${categoryId}/posts/create`);
   };
 
-  const titleRef = useRef();
-  const authorRef = useRef();
+  const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination(
+    searchParams ? searchParams.pageSize : 10,
+    searchParams ? searchParams.pageIndex : 0
+  );
 
-  const { pageIndex, pageSize, onPaginationChange, pagination } =
-    usePagination();
+  const { sorting, onSortingChange, field, order } = useSorting(
+    searchParams ? searchParams.sortColumn : "rowNumber",
+    searchParams ? searchParams.sortDirection : "DESC"
+  );
 
-  const { sorting, onSortingChange, field, order } = useSorting();
-
-  const retrievePostList = (
-    pageIndex = 0,
-    pageSize = 10,
-    field = "rowNumber",
-    order = "desc"
-  ) => {
+  const retrievePostList = () => {
     const paramsObj = {
       startIndex: pageIndex * pageSize,
+      pageIndex: pageIndex,
       pageSize: pageSize,
       sortColumn: field,
       sortDirection: order,
-      title: titleRef.current.value,
-      author: authorRef.current.value,
+      title: searchCondition.title,
+      author: searchCondition.author,
+      startCreatedDate: searchCondition.startCreatedDate
+        ? format(searchCondition.startCreatedDate, "yyyy-MM-dd")
+        : "",
+      endCreatedDate: searchCondition.endCreatedDate
+        ? format(searchCondition.endCreatedDate, "yyyy-MM-dd")
+        : "",
     };
-
     const searchParams = new URLSearchParams(paramsObj);
+    paramsRef.current = paramsObj;
     api({
       url: `/api/boards/${categoryId}/posts?${searchParams.toString()}`,
       method: "GET",
@@ -109,8 +129,28 @@ const PostList = () => {
     });
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSearchCondition((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleCreatedDate = ({ from, to }) => {
+    setSearchCondition((prevState) => {
+      return { ...prevState, startCreatedDate: from, endCreatedDate: to };
+    });
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      retrievePostList();
+    }
+  };
+
   useEffect(() => {
-    retrievePostList(pageIndex, pageSize, field, order);
+    retrievePostList();
   }, [pagination, sorting]);
 
   return (
@@ -120,14 +160,44 @@ const PostList = () => {
       </div>
       <div>
         <div className="flex w-full justify-center items-center">
-          <Label htmlFor="title" className="w-40 text-center">
-            제목
-          </Label>
-          <Input type="text" id="title" ref={titleRef} />
-          <Label htmlFor="title" className="w-40 text-center">
-            작성자
-          </Label>
-          <Input type="text" id="author" ref={authorRef} />
+          <div className="flex w-full items-center">
+            <Label htmlFor="title" className="w-40 text-center">
+              제목
+            </Label>
+            <Input
+              type="text"
+              id="title"
+              name="title"
+              value={searchCondition.title}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+            />
+          </div>
+          <div className="flex w-full items-center">
+            <Label htmlFor="title" className="w-40 text-center">
+              작성자
+            </Label>
+            <Input
+              type="text"
+              id="author"
+              name="author"
+              value={searchCondition.author}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+            />
+          </div>
+          <div className="flex w-full items-center">
+            <Label htmlFor="datePicker" className="w-40 text-center">
+              작성일
+            </Label>
+            <DatePickerWithRange
+              id="datePicker"
+              className="w-full"
+              from={searchCondition.startCreatedDate}
+              to={searchCondition.endCreatedDate}
+              setDate={handleCreatedDate}
+            />
+          </div>
           <Button className="ml-4" onClick={() => retrievePostList()}>
             검색
           </Button>

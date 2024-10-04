@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -40,7 +40,7 @@ const PostEdit = () => {
     setValue,
   } = useForm();
 
-  const retrievePost = () => {
+  const retrievePost = useCallback(() => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}`,
       method: "GET",
@@ -50,7 +50,7 @@ const PostEdit = () => {
         setValue(key, post[key]);
       });
     });
-  };
+  }, [api, categoryId, postId, setValue]);
 
   const onSubmit = (data) => {
     api({
@@ -61,7 +61,7 @@ const PostEdit = () => {
         content: data.content,
         userId: user.userId,
       },
-    }).then((response) => {
+    }).then(() => {
       Swal.fire({
         icon: "success",
         title: "수정되었습니다.",
@@ -74,7 +74,7 @@ const PostEdit = () => {
 
   useEffect(() => {
     retrievePost();
-  }, []);
+  }, [retrievePost]);
 
   return (
     <>
