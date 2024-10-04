@@ -1,12 +1,11 @@
-import { Fragment, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import useAxios from "@/hooks/useAxios";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { CornerDownRight } from "lucide-react";
+
 import CommentList from "./CommentList";
 import CommentCreate from "./CommentCreate";
 
@@ -17,7 +16,7 @@ const PostDetail = () => {
   const { categoryId, postId } = useParams();
   const [post, setPost] = useState({});
   const [comments, setComments] = useState([]);
-  const [showReply, setShowReply] = useState(false);
+  const location = useLocation();
 
   const breadCrumbList = [
     { url: `/categories/${categoryId}/posts`, name: "자유게시판" },
@@ -28,31 +27,34 @@ const PostDetail = () => {
   };
 
   const gotoList = () => {
-    navigate(`/boards/${categoryId}/posts`);
+    navigate(`/boards/${categoryId}/posts`, { state: location.state });
   };
 
-  const retrievePost = () => {
+  const retrievePost = useCallback(() => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}`,
       method: "GET",
     }).then((response) => {
       setPost(response.data.data);
     });
-  };
+  }, [api, categoryId, postId]);
 
-  const retrieveCommentList = () => {
+  const retrieveCommentList = useCallback(() => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}/comments`,
       method: "GET",
     }).then((response) => {
       setComments(response.data.data);
     });
-  };
+  }, [api, categoryId, postId]);
 
   useEffect(() => {
     retrievePost();
+  }, [retrievePost]);
+
+  useEffect(() => {
     retrieveCommentList();
-  }, []);
+  }, [retrieveCommentList]);
 
   return (
     <>

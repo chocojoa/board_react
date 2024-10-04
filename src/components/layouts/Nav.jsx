@@ -26,11 +26,9 @@ const Nav = () => {
       data: {
         refreshToken: auth.token.refreshToken,
       },
-    }).then((response) => {
-      if (response.data.status === "success") {
-        dispatch(authSlice.actions.signOut());
-        navigate("/");
-      }
+    }).then(() => {
+      dispatch(authSlice.actions.signOut());
+      navigate("/");
     });
   };
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-const usePagination = () => {
+const usePagination = (initPageSize = 10, initPageIndex = 0) => {
   const [pagination, setPagination] = useState({
-    pageSize: 10,
-    pageIndex: 0,
+    pageSize: initPageSize,
+    pageIndex: initPageIndex,
   });
   const { pageSize, pageIndex } = pagination;
 
