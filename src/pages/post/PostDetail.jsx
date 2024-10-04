@@ -30,31 +30,28 @@ const PostDetail = () => {
     navigate(`/boards/${categoryId}/posts`, { state: location.state });
   };
 
-  const retrievePost = useCallback(() => {
+  const retrievePost = () => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}`,
       method: "GET",
     }).then((response) => {
       setPost(response.data.data);
     });
-  }, [api, categoryId, postId]);
+  };
 
-  const retrieveCommentList = useCallback(() => {
+  const retrieveCommentList = () => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}/comments`,
       method: "GET",
     }).then((response) => {
       setComments(response.data.data);
     });
-  }, [api, categoryId, postId]);
+  };
 
   useEffect(() => {
     retrievePost();
-  }, [retrievePost]);
-
-  useEffect(() => {
     retrieveCommentList();
-  }, [retrieveCommentList]);
+  }, []);
 
   return (
     <>
