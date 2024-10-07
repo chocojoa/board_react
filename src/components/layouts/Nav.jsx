@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import authSlice from "@/store/authSlice";
 import useAxios from "@/hooks/useAxios";
 
-import { LayoutDashboard, Smile, StickyNote } from "lucide-react";
+import { LayoutDashboard, Smile, StickyNote, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +52,12 @@ const Nav = () => {
                   <div className="flex items-center w-full">
                     <StickyNote size={18} className="text-gray-500" />
                     <span className="ml-2">자유게시판</span>
+                  </div>
+                </Link>
+                <Link to="/users">
+                  <div className="flex items-center w-full">
+                    <User size={18} className="text-gray-500" />
+                    <span className="ml-2">사용자</span>
                   </div>
                 </Link>
               </div>

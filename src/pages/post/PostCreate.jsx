@@ -21,7 +21,7 @@ const PostCreate = () => {
   });
 
   const breadCrumbList = [
-    { url: `/categories/${categoryId}/posts`, name: `자유게시판` },
+    { url: `/boards/${categoryId}/posts`, name: `자유게시판` },
   ];
 
   const gotoDetail = (postId) => {

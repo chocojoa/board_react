@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import useAxios from "@/hooks/useAxios";
@@ -19,7 +19,7 @@ const PostDetail = () => {
   const location = useLocation();
 
   const breadCrumbList = [
-    { url: `/categories/${categoryId}/posts`, name: "자유게시판" },
+    { url: `/boards/${categoryId}/posts`, name: "자유게시판" },
   ];
 
   const gotoEdit = () => {

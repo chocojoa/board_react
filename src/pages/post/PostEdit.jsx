@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -22,7 +22,7 @@ const PostEdit = () => {
   });
 
   const breadCrumbList = [
-    { url: `/categories/${categoryId}/posts`, name: `자유게시판` },
+    { url: `/boards/${categoryId}/posts`, name: `자유게시판` },
   ];
 
   const gotoDetail = (postId) => {
@@ -40,7 +40,7 @@ const PostEdit = () => {
     setValue,
   } = useForm();
 
-  const retrievePost = useCallback(() => {
+  const retrievePost = () => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}`,
       method: "GET",
@@ -50,7 +50,7 @@ const PostEdit = () => {
         setValue(key, post[key]);
       });
     });
-  }, [api, categoryId, postId, setValue]);
+  };
 
   const onSubmit = (data) => {
     api({
@@ -74,7 +74,7 @@ const PostEdit = () => {
 
   useEffect(() => {
     retrievePost();
-  }, [retrievePost]);
+  }, []);
 
   return (
     <>

@@ -5,6 +5,7 @@ import { CalculatorIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "./ui/calendar";
 import { Button } from "./ui/button";
+import { ko } from "date-fns/locale";
 
 const DatePickerWithRange = ({ className, from, to, setDate }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -52,6 +53,7 @@ const DatePickerWithRange = ({ className, from, to, setDate }) => {
             defaultMonth={from}
             selected={{ from, to }}
             onSelect={setDate}
+            locale={ko}
             numberOfMonths={2}
           />
           <div className="w-full space-x-2 text-center border-t py-2">

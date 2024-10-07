@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import useAxios from "@/hooks/useAxios";
 import usePagination from "@/hooks/usePagination";
@@ -13,11 +13,10 @@ import { Label } from "@/components/ui/label";
 import DatePickerWithRange from "@/components/DataPickerWithRange";
 import { format } from "date-fns";
 
-const PostList = () => {
+const UserList = () => {
   const navigate = useNavigate();
   const api = useAxios();
 
-  const { categoryId } = useParams();
   const [data, setData] = useState({
     totalCount: 0,
     dataList: [],
@@ -28,15 +27,13 @@ const PostList = () => {
   const searchParams = location.state ? location.state.searchCondition : null;
 
   const [searchCondition, setSearchCondition] = useState({
-    title: searchParams ? searchParams.title : "",
-    author: searchParams ? searchParams.author : "",
+    userName: searchParams ? searchParams.userName : "",
+    email: searchParams ? searchParams.email : "",
     startCreatedDate: "",
     endCreatedDate: "",
   });
 
-  const breadCrumbList = [
-    { url: `/boards/${categoryId}/posts`, name: `자유게시판` },
-  ];
+  const breadCrumbList = [{ url: `/users`, name: `사용자` }];
 
   const columns = useMemo(
     () => [
@@ -47,38 +44,31 @@ const PostList = () => {
         enableSorting: true,
       },
       {
-        accessorKey: "title",
-        header: "제목",
-        size: 400,
+        accessorKey: "userName",
+        header: "이름",
+        size: 100,
         enableSorting: true,
         cell: ({ row }) => {
-          const categoryId = row.original.categoryId;
-          const postId = row.original.postId;
+          const userId = row.original.userId;
           return (
             <Link
-              to={`/boards/${categoryId}/posts/${postId}`}
+              to={`/users/${userId}`}
               state={{ searchCondition: paramsRef.current }}
             >
-              {row.getValue("title")}
+              {row.getValue("userName")}
             </Link>
           );
         },
       },
       {
-        accessorKey: "viewCount",
-        header: "조회수",
-        size: 100,
-        enableSorting: true,
-      },
-      {
-        accessorKey: "author",
-        header: "작성자",
+        accessorKey: "email",
+        header: "이메일",
         size: 100,
         enableSorting: true,
       },
       {
         accessorKey: "createdDate",
-        header: "작성일",
+        header: "등록일",
         size: 100,
         enableSorting: true,
       },
@@ -87,7 +77,7 @@ const PostList = () => {
   );
 
   const gotoRegister = () => {
-    navigate(`/boards/${categoryId}/posts/create`);
+    navigate(`/users/create`);
   };
 
   const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination(
@@ -107,8 +97,8 @@ const PostList = () => {
       pageSize: pageSize,
       sortColumn: field,
       sortDirection: order,
-      title: searchCondition.title,
-      author: searchCondition.author,
+      userName: searchCondition.userName,
+      email: searchCondition.email,
       startCreatedDate: searchCondition.startCreatedDate
         ? format(searchCondition.startCreatedDate, "yyyy-MM-dd")
         : "",
@@ -119,7 +109,7 @@ const PostList = () => {
     const searchParams = new URLSearchParams(paramsObj);
     paramsRef.current = paramsObj;
     api({
-      url: `/api/boards/${categoryId}/posts?${searchParams.toString()}`,
+      url: `/api/users?${searchParams.toString()}`,
       method: "GET",
     }).then((response) => {
       setData({
@@ -161,27 +151,27 @@ const PostList = () => {
       <div>
         <div className="flex w-full justify-center items-center">
           <div className="flex w-full items-center">
-            <Label htmlFor="title" className="w-40 text-center">
-              제목
+            <Label htmlFor="userName" className="w-40 text-center">
+              이름
             </Label>
             <Input
               type="text"
-              id="title"
-              name="title"
-              value={searchCondition.title}
+              id="userName"
+              name="userName"
+              value={searchCondition.userName}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
             />
           </div>
           <div className="flex w-full items-center">
-            <Label htmlFor="title" className="w-40 text-center">
-              작성자
+            <Label htmlFor="email" className="w-40 text-center">
+              이메일
             </Label>
             <Input
               type="text"
-              id="author"
-              name="author"
-              value={searchCondition.author}
+              id="email"
+              name="email"
+              value={searchCondition.email}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
             />
@@ -223,4 +213,4 @@ const PostList = () => {
   );
 };
 
-export default PostList;
+export default UserList;
