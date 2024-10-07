@@ -35,7 +35,7 @@ const PostList = () => {
   });
 
   const breadCrumbList = [
-    { url: `/categories/${categoryId}/posts`, name: `자유게시판` },
+    { url: `/boards/${categoryId}/posts`, name: `자유게시판` },
   ];
 
   const columns = useMemo(
