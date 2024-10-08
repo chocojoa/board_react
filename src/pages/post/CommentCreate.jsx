@@ -1,11 +1,19 @@
-import { Fragment } from "react";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import useAxios from "@/hooks/useAxios";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-
-import useAxios from "@/hooks/useAxios";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 
 const CommentCreate = ({
   categoryId,
@@ -16,12 +24,20 @@ const CommentCreate = ({
 }) => {
   const api = useAxios();
   const user = useSelector((state) => state.auth.user);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm();
+
+  const formSchema = z.object({
+    content: z
+      .string()
+      .trim()
+      .min(1, { message: "댓글이 입력되지 않았습니다." }),
+  });
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      content: "",
+    },
+  });
 
   const onSubmit = (data) => {
     api({
@@ -35,7 +51,7 @@ const CommentCreate = ({
         userId: user.userId,
       },
     }).then(() => {
-      reset();
+      form.reset();
       retrieveCommentList();
       if (typeof handleCommentClose === "function") {
         handleCommentClose();
@@ -44,31 +60,37 @@ const CommentCreate = ({
   };
 
   return (
-    <Fragment>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex items-center space-x-2 pt-4 pb-2">
-          <div className="w-11/12">
-            <Textarea
-              row="3"
-              placeholder="댓글을 입력해 주세요"
-              {...register("content", {
-                required: "댓글이 입력되지 않았습니다.",
-              })}
-            />
-            {errors.content && (
-              <span className="text-sm font-medium text-red-500">
-                {errors.content.message}
-              </span>
-            )}
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="flex items-center space-x-2 pt-4 pb-2">
+            <div className="w-11/12">
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        row="3"
+                        placeholder="댓글을 입력해 주세요"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              ></FormField>
+            </div>
+            <div className="w-1/12 text-center">
+              <Button type="submit" size="sm">
+                저장
+              </Button>
+            </div>
           </div>
-          <div className="w-1/12 text-center">
-            <Button type="submit" size="sm">
-              저장
-            </Button>
-          </div>
-        </div>
-      </form>
-    </Fragment>
+        </form>
+      </Form>
+    </>
   );
 };
 

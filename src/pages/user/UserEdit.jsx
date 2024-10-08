@@ -11,7 +11,6 @@ import useAxios from "@/hooks/useAxios";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -21,46 +20,59 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const PostEdit = () => {
+const UserEdit = () => {
   const navigate = useNavigate();
   const api = useAxios();
 
-  const { categoryId, postId } = useParams();
+  const { userId } = useParams();
   const user = useSelector((state) => {
     return state.auth.user;
   });
 
-  const breadCrumbList = [
-    { url: `/boards/${categoryId}/posts`, name: `자유게시판` },
-  ];
+  const breadCrumbList = [{ url: `/users`, name: `자유게시판` }];
 
-  const gotoDetail = (postId) => {
-    navigate(`/boards/${categoryId}/posts/${postId}`);
+  const gotoDetail = (userId) => {
+    navigate(`/users/${userId}`);
   };
 
   const gotoList = () => {
-    navigate(`/boards/${categoryId}/posts`);
+    navigate(`/users`);
   };
 
   const formSchema = z.object({
-    title: z.string().trim().min(1, { message: "제목이 입력되지 않았습니다." }),
-    content: z
+    userName: z
       .string()
       .trim()
-      .min(1, { message: "내용이 입력되지 않았습니다." }),
+      .min(1, { message: "이름이 입력되지 않았습니다." }),
+    email: z
+      .string()
+      .trim()
+      .min(1, { message: "이메일 주소가 입력되지 않았습니다." }),
+    password: z
+      .string()
+      .trim()
+      .min(8, { message: "비밀번호는 8자 이상입니다." })
+      .max(15, { message: "비밀번호는 15자 이하 입니다." }),
+    verifyPassword: z
+      .string()
+      .trim()
+      .min(8, { message: "비밀번호는 8자 이상입니다." })
+      .max(15, { message: "비밀번호는 15자 이하 입니다." }),
   });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      content: "",
+      userName: "",
+      email: "",
+      password: "",
+      verifyPassword: "",
     },
   });
 
-  const retrievePost = () => {
+  const retrieveUser = () => {
     api({
-      url: `/api/boards/${categoryId}/posts/${postId}`,
+      url: `/api/users/${userId}`,
       method: "GET",
     }).then((response) => {
       const post = response.data.data;
@@ -72,11 +84,13 @@ const PostEdit = () => {
 
   const onSubmit = (data) => {
     api({
-      url: `/api/boards/${categoryId}/posts/${postId}`,
+      url: `/api/users/${userId}`,
       method: "PUT",
       data: {
-        title: data.title,
-        content: data.content,
+        userName: data.userName,
+        email: data.email,
+        password: data.password,
+        verifyPassword: data.verifyPassword,
         userId: user.userId,
       },
     }).then(() => {
@@ -85,26 +99,26 @@ const PostEdit = () => {
         title: "수정되었습니다.",
         timer: 2000,
       }).then(() => {
-        gotoDetail(postId);
+        gotoDetail(userId);
       });
     });
   };
 
   useEffect(() => {
-    retrievePost();
+    retrieveUser();
   }, []);
 
   return (
     <>
-      <PageHeader title="자유게시판" itemList={breadCrumbList} />
+      <PageHeader title="사용자" itemList={breadCrumbList} />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="title"
+            name="userName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>제목</FormLabel>
+                <FormLabel>이름</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -114,12 +128,38 @@ const PostEdit = () => {
           ></FormField>
           <FormField
             control={form.control}
-            name="content"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>내용</FormLabel>
+                <FormLabel>이메일 주소</FormLabel>
                 <FormControl>
-                  <Textarea rows={15} {...field} />
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          ></FormField>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>비밀번호</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          ></FormField>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>비밀번호 확인</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -137,4 +177,4 @@ const PostEdit = () => {
   );
 };
 
-export default PostEdit;
+export default UserEdit;

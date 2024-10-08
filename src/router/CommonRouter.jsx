@@ -14,6 +14,9 @@ import PostCreate from "@/pages/post/PostCreate";
 import PostDetail from "@/pages/post/PostDetail";
 import PostEdit from "@/pages/post/PostEdit";
 import UserList from "@/pages/user/UserList";
+import UserCreate from "@/pages/user/UserCreate";
+import UserDetail from "@/pages/user/UserDetail";
+import UserEdit from "@/pages/user/UserEdit";
 
 const CommonRouter = () => {
   const auth = useSelector((state) => state.auth);
@@ -55,6 +58,9 @@ const CommonRouter = () => {
                 element={<PostEdit />}
               />
               <Route path="/users" element={<UserList />} />
+              <Route path="/users/create" element={<UserCreate />} />
+              <Route path="/users/:userId" element={<UserDetail />} />
+              <Route path="/users/:userId/edit" element={<UserEdit />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
             <Route path="/*" element={<NotFound />} />
