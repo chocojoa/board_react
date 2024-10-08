@@ -11,3 +11,4 @@
 - react hook form (https://react-hook-form.com/)
 - lucide icon (https://lucide.dev/)
 - sweetalert2 (https://sweetalert2.github.io/)
+- zod (https://zod.dev/)
