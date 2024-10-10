@@ -19,7 +19,7 @@ const NotFound = () => {
               요청하신 주소가 변경, 삭제되어 찾을 수 없습니다.
             </p>
 
-            <Button>
+            <Button type="button">
               <Link
                 to="/"
                 className="inline-flex text-white bg-primary-600 hover:bg-primary-800 font-medium rounded-lg text-sm text-center dark:focus:ring-primary-900 my-4"

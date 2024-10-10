@@ -216,7 +216,9 @@ const PostList = () => {
       </div>
       <div className="flex w-full justify-end py-4">
         <div className="items-end">
-          <Button onClick={gotoRegister}>등록</Button>
+          <Button type="button" onClick={gotoRegister}>
+            등록
+          </Button>
         </div>
       </div>
     </>

@@ -168,7 +168,9 @@ const UserEdit = () => {
           <div className="flex w-full justify-end mt-4">
             <div className="items-end space-x-2">
               <Button type="submit">저장</Button>
-              <Button onClick={gotoList}>목록</Button>
+              <Button type="button" onClick={gotoList}>
+                목록
+              </Button>
             </div>
           </div>
         </form>

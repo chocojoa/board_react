@@ -1,5 +1,5 @@
 import { Provider } from "react-redux";
-import CommonRouter from "./router/CommonRouter";
+import CommonRouter from "./routes/CommonRouter";
 import store, { persistor } from "./store";
 import { PersistGate } from "redux-persist/integration/react";
 
