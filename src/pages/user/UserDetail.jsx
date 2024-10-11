@@ -5,7 +5,6 @@ import useAxios from "@/hooks/useAxios";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 
 const UserDetail = () => {
   const navigate = useNavigate();
@@ -51,8 +50,12 @@ const UserDetail = () => {
       </div>
       <div className="flex w-full justify-end mt-4">
         <div className="items-end space-x-2">
-          <Button onClick={gotoEdit}>수정</Button>
-          <Button onClick={gotoList}>목록</Button>
+          <Button type="button" onClick={gotoEdit}>
+            수정
+          </Button>
+          <Button type="button" onClick={gotoList}>
+            목록
+          </Button>
         </div>
       </div>
     </>

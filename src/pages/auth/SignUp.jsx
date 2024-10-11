@@ -1,24 +1,31 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Baby } from "lucide-react";
+import Swal from "sweetalert2";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Baby } from "lucide-react";
-
-import Swal from "sweetalert2";
+import UserForm from "@/components/form/UserForm";
+import userFormSchema from "@/components/formSchema/UserFormSchema";
+import { Form } from "@/components/ui/form";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const api = useAxios();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const formSchema = userFormSchema();
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      userName: "",
+      email: "",
+      password: "",
+      verifyPassword: "",
+    },
+  });
 
   const onSubmit = (data) => {
     api({
@@ -59,92 +66,19 @@ const SignUp = () => {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <Label htmlFor="userName">Name</Label>
-              <div className="mt-2">
-                <Input
-                  id="userName"
-                  type="text"
-                  {...register("userName", {
-                    required: "Name is required",
-                    minLength: {
-                      value: 3,
-                      message: "Name must be at least 3",
-                    },
-                  })}
-                  className="block w-full rounded-md py-1.5 px-2"
-                />
-                {errors.userName && (
-                  <span className="text-sm font-medium text-red-500">
-                    {errors.userName.message}
-                  </span>
-                )}
+          <Form {...form}>
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+              <UserForm form={form} />
+              <div>
+                <Button
+                  type="submit"
+                  className="flex w-full justify-center rounded-sm font-semibold"
+                >
+                  Create new account
+                </Button>
               </div>
-            </div>
-            <div>
-              <Label htmlFor="email">Email address</Label>
-              <div className="mt-2">
-                <Input
-                  id="email"
-                  type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    minLength: {
-                      value: 6,
-                      message: "Email must be at least 6",
-                    },
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address",
-                    },
-                  })}
-                  className="block w-full rounded-md py-1.5 px-2"
-                />
-                {errors.email && (
-                  <span className="text-sm font-medium text-red-500">
-                    {errors.email.message}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-              </div>
-              <div className="mt-2">
-                <Input
-                  id="password"
-                  type="password"
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 8,
-                      message: "Password must be at least 8",
-                    },
-                  })}
-                  autoComplete="current-password"
-                  className="block w-full rounded-md py-1.5 px-2"
-                />
-                {errors.password && (
-                  <span className="text-sm font-medium text-red-500">
-                    {errors.password.message}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Button
-                type="submit"
-                className="flex w-full justify-center rounded-sm font-semibold"
-              >
-                Create new account
-              </Button>
-            </div>
-          </form>
-
+            </form>
+          </Form>
           <p className="mt-10 text-center text-sm">
             Already have account?{" "}
             <Link to="/auth/signIn" className="font-semibold">
