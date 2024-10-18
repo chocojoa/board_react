@@ -20,14 +20,14 @@ const UserCreate = () => {
     return state.auth.user;
   });
 
-  const breadCrumbList = [{ url: `/users`, name: `사용자` }];
+  const breadCrumbList = [{ url: `/admin/users`, name: `사용자관리` }];
 
   const gotoDetail = (userId) => {
-    navigate(`/users/${userId}`);
+    navigate(`/admin/users/${userId}`);
   };
 
   const gotoList = () => {
-    navigate(`/users`);
+    navigate(`/admin/users`);
   };
 
   const formSchema = userFormSchema();
@@ -44,7 +44,7 @@ const UserCreate = () => {
 
   const onSubmit = (data) => {
     api({
-      url: `/api/users`,
+      url: `/api/admin/users`,
       method: "POST",
       data: {
         userName: data.title,
@@ -67,7 +67,7 @@ const UserCreate = () => {
 
   return (
     <>
-      <PageHeader title="사용자" itemList={breadCrumbList} />
+      <PageHeader title="사용자관리" itemList={breadCrumbList} />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <UserForm form={form} />

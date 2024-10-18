@@ -7,7 +7,7 @@ import { Calendar } from "./ui/calendar";
 import { Button } from "./ui/button";
 import { ko } from "date-fns/locale";
 
-const DatePickerWithRange = ({ className, from, to, setDate }) => {
+const DatePickerWithRange = ({ className, id, from, to, setDate }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const handleOnSelect = () => {
@@ -25,7 +25,7 @@ const DatePickerWithRange = ({ className, from, to, setDate }) => {
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
-            id="date"
+            id={id}
             variant="outline"
             className={cn(
               "justify-start text-left font-normal",

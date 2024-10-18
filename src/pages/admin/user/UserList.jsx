@@ -33,7 +33,7 @@ const UserList = () => {
     endCreatedDate: "",
   });
 
-  const breadCrumbList = [{ url: `/users`, name: `사용자` }];
+  const breadCrumbList = [{ url: `/admin/users`, name: `사용자관리` }];
 
   const columns = useMemo(
     () => [
@@ -77,7 +77,7 @@ const UserList = () => {
   );
 
   const gotoRegister = () => {
-    navigate(`/users/create`);
+    navigate(`/admin/users/create`);
   };
 
   const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination(
@@ -109,7 +109,7 @@ const UserList = () => {
     const searchParams = new URLSearchParams(paramsObj);
     paramsRef.current = paramsObj;
     api({
-      url: `/api/users?${searchParams.toString()}`,
+      url: `/api/admin/users?${searchParams.toString()}`,
       method: "GET",
     }).then((response) => {
       setData({
@@ -146,7 +146,7 @@ const UserList = () => {
   return (
     <>
       <div className="my-4">
-        <PageHeader title="자유게시판" itemList={breadCrumbList} />
+        <PageHeader title="사용자관리" itemList={breadCrumbList} />
       </div>
       <div>
         <div className="flex w-full justify-center items-center">

@@ -1,16 +1,26 @@
+import { forwardRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { Smile } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import authSlice from "@/store/authSlice";
 import useAxios from "@/hooks/useAxios";
 
-import { LayoutDashboard, Smile, StickyNote, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "../ui/navigation-menu";
 
 const Nav = () => {
   const api = useAxios();
@@ -18,6 +28,8 @@ const Nav = () => {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const user = auth.user;
+
+  const [menu, setMenu] = useState([]);
 
   const signOut = () => {
     api({
@@ -32,34 +44,68 @@ const Nav = () => {
     });
   };
 
+  const retrieveMenus = () => {
+    api({
+      url: "/api/admin/menus",
+      method: "GET",
+    }).then((response) => {
+      setMenu(response.data.data);
+    });
+  };
+
+  const getNavigationMenuContent = (menuId) => {
+    const childMenu = menu.filter(
+      (e) => e.groupId === menuId && e.menuId !== menuId
+    );
+    return (
+      <ul className="grid gap-3 p-2 md:w-[150px] lg:w-[150px]">
+        {childMenu.map((e) => (
+          <ListItem key={e.menuId} to={e.menuUrl}>
+            {e.menuName}
+          </ListItem>
+        ))}
+      </ul>
+    );
+  };
+
+  useEffect(() => {
+    retrieveMenus();
+  }, []);
+
   return (
     <>
       <nav className="w-full border shadow-sm bg-white">
         <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex">
-              <div className="flex-shrink-0 font-bold">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 font-bold mr-10">
                 <Link to="/">React 연습화면</Link>
               </div>
               <div className="flex flex-shrink-0 items-center space-x-6 mx-10 text-sm/[17px]">
-                <Link to="/dashboard">
-                  <div className="flex items-center w-full">
-                    <LayoutDashboard size={18} className="text-gray-500" />
-                    <span className="ml-2">대시보드</span>
-                  </div>
-                </Link>
-                <Link to="/boards/free/posts">
-                  <div className="flex items-center w-full">
-                    <StickyNote size={18} className="text-gray-500" />
-                    <span className="ml-2">자유게시판</span>
-                  </div>
-                </Link>
-                <Link to="/users">
-                  <div className="flex items-center w-full">
-                    <User size={18} className="text-gray-500" />
-                    <span className="ml-2">사용자</span>
-                  </div>
-                </Link>
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    {menu.map((e) => {
+                      if (!e.parentMenuId && e.childCount == 0) {
+                        return (
+                          <NavigationMenuItem key={e.menuId}>
+                            <Link to={e.menuUrl}>{e.menuName}</Link>
+                          </NavigationMenuItem>
+                        );
+                      } else if (!e.parentMenuId && e.childCount > 0) {
+                        return (
+                          <NavigationMenuItem key={e.menuId}>
+                            <NavigationMenuTrigger>
+                              {e.menuName}
+                            </NavigationMenuTrigger>
+                            <NavigationMenuContent>
+                              {getNavigationMenuContent(e.menuId)}
+                            </NavigationMenuContent>
+                          </NavigationMenuItem>
+                        );
+                      }
+                    })}
+                  </NavigationMenuList>
+                </NavigationMenu>
               </div>
             </div>
             <div className="flex-shrink-0 text-sm">
@@ -74,7 +120,7 @@ const Nav = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem>
-                    <Link to="/profile">Profile</Link>
+                    <Link to="/user/profile">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Link onClick={signOut}>Sign out</Link>
@@ -88,5 +134,29 @@ const Nav = () => {
     </>
   );
 };
+
+const ListItem = forwardRef(({ className, to, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <Link
+          to={to}
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </Link>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+
+ListItem.displayName = "ListItem";
 
 export default Nav;

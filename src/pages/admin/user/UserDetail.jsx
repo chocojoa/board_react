@@ -14,19 +14,19 @@ const UserDetail = () => {
   const [user, setUser] = useState({});
   const location = useLocation();
 
-  const breadCrumbList = [{ url: `/users`, name: "사용자" }];
+  const breadCrumbList = [{ url: `/admin/users`, name: "사용자관리" }];
 
   const gotoEdit = () => {
-    navigate(`/users/${userId}/edit`);
+    navigate(`/admin/users/${userId}/edit`);
   };
 
   const gotoList = () => {
-    navigate(`/users`, { state: location.state });
+    navigate(`/admin/users`, { state: location.state });
   };
 
   const retrieveUser = () => {
     api({
-      url: `/api/users/${userId}`,
+      url: `/api/admin/users/${userId}`,
       method: "GET",
     }).then((response) => {
       setUser(response.data.data);
@@ -39,7 +39,7 @@ const UserDetail = () => {
 
   return (
     <>
-      <PageHeader title="사용자" itemList={breadCrumbList} />
+      <PageHeader title="사용자관리" itemList={breadCrumbList} />
       <div className="space-y-2 my-2">
         <div className="w-full">
           <span>이름: {user.userName}</span>
