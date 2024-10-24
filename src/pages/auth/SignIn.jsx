@@ -43,7 +43,7 @@ const SignIn = () => {
         Swal.fire({
           icon: "error",
           title: "문제가 발생하였습니다.",
-          text: data.message,
+          text: data.response.data.message,
           timer: 2000,
         });
       });
