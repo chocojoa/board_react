@@ -13,10 +13,10 @@ import Profile from "@/pages/user/Profile";
 import PostCreate from "@/pages/post/PostCreate";
 import PostDetail from "@/pages/post/PostDetail";
 import PostEdit from "@/pages/post/PostEdit";
-import UserList from "@/pages/user/UserList";
-import UserCreate from "@/pages/user/UserCreate";
-import UserDetail from "@/pages/user/UserDetail";
-import UserEdit from "@/pages/user/UserEdit";
+import UserList from "@/pages/admin/user/UserList";
+import UserCreate from "@/pages/admin/user/UserCreate";
+import UserDetail from "@/pages/admin/user/UserDetail";
+import UserEdit from "@/pages/admin/user/UserEdit";
 
 const CommonRouter = () => {
   const auth = useSelector((state) => state.auth);
@@ -57,11 +57,11 @@ const CommonRouter = () => {
                 path="/boards/:categoryId/posts/:postId/edit"
                 element={<PostEdit />}
               />
-              <Route path="/users" element={<UserList />} />
-              <Route path="/users/create" element={<UserCreate />} />
-              <Route path="/users/:userId" element={<UserDetail />} />
-              <Route path="/users/:userId/edit" element={<UserEdit />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/admin/users" element={<UserList />} />
+              <Route path="/admin/users/create" element={<UserCreate />} />
+              <Route path="/admin/users/:userId" element={<UserDetail />} />
+              <Route path="/admin/users/:userId/edit" element={<UserEdit />} />
+              <Route path="/user/profile" element={<Profile />} />
             </Route>
             <Route path="/*" element={<NotFound />} />
           </Routes>

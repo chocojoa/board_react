@@ -1,16 +1,24 @@
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { Smile } from "lucide-react";
 
 import authSlice from "@/store/authSlice";
 import useAxios from "@/hooks/useAxios";
 
-import { LayoutDashboard, Smile, StickyNote, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "../ui/menubar";
 
 const Nav = () => {
   const api = useAxios();
@@ -18,6 +26,8 @@ const Nav = () => {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const user = auth.user;
+
+  const [menu, setMenu] = useState([]);
 
   const signOut = () => {
     api({
@@ -32,34 +42,65 @@ const Nav = () => {
     });
   };
 
+  const retrieveMenus = () => {
+    api({
+      url: "/api/admin/menus",
+      method: "GET",
+    }).then((response) => {
+      console.log(response);
+      setMenu(response.data.data);
+    });
+  };
+
+  const getMenuContent = (menuId) => {
+    const childMenu = menu.filter(
+      (e) => e.groupId === menuId && e.menuId !== menuId
+    );
+    return (
+      <MenubarContent>
+        {childMenu.map((m) => (
+          <Link to={m.menuUrl} key={m.menuId}>
+            <MenubarItem>{m.menuName}</MenubarItem>
+          </Link>
+        ))}
+      </MenubarContent>
+    );
+  };
+
+  useEffect(() => {
+    retrieveMenus();
+  }, []);
+
   return (
     <>
       <nav className="w-full border shadow-sm bg-white">
         <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex">
-              <div className="flex-shrink-0 font-bold">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 font-bold mr-10">
                 <Link to="/">React 연습화면</Link>
               </div>
               <div className="flex flex-shrink-0 items-center space-x-6 mx-10 text-sm/[17px]">
-                <Link to="/dashboard">
-                  <div className="flex items-center w-full">
-                    <LayoutDashboard size={18} className="text-gray-500" />
-                    <span className="ml-2">대시보드</span>
-                  </div>
-                </Link>
-                <Link to="/boards/free/posts">
-                  <div className="flex items-center w-full">
-                    <StickyNote size={18} className="text-gray-500" />
-                    <span className="ml-2">자유게시판</span>
-                  </div>
-                </Link>
-                <Link to="/users">
-                  <div className="flex items-center w-full">
-                    <User size={18} className="text-gray-500" />
-                    <span className="ml-2">사용자</span>
-                  </div>
-                </Link>
+                <Menubar className="border-none shadow-none">
+                  {menu.map((m) => {
+                    if (m.depth === 1 && m.childCount > 0) {
+                      return (
+                        <MenubarMenu key={m.menuId}>
+                          <MenubarTrigger>{m.menuName}</MenubarTrigger>
+                          {getMenuContent(m.menuId)}
+                        </MenubarMenu>
+                      );
+                    } else if (m.depth === 1 && m.childCount === 0) {
+                      return (
+                        <MenubarMenu key={m.menuId}>
+                          <Link to={m.menuUrl}>
+                            <MenubarTrigger>{m.menuName}</MenubarTrigger>
+                          </Link>
+                        </MenubarMenu>
+                      );
+                    }
+                  })}
+                </Menubar>
               </div>
             </div>
             <div className="flex-shrink-0 text-sm">
@@ -74,7 +115,7 @@ const Nav = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem>
-                    <Link to="/profile">Profile</Link>
+                    <Link to="/user/profile">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Link onClick={signOut}>Sign out</Link>

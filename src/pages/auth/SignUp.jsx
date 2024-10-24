@@ -47,7 +47,7 @@ const SignUp = () => {
         Swal.fire({
           icon: "error",
           title: "문제가 발생하였습니다.",
-          text: data.message,
+          text: data.response.data.message,
           timer: 2000,
         });
       });
@@ -64,7 +64,6 @@ const SignUp = () => {
             Create new account
           </h2>
         </div>
-
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <Form {...form}>
             <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
