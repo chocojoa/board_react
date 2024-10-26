@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Smile } from "lucide-react";
@@ -17,6 +17,9 @@ import {
   MenubarContent,
   MenubarItem,
   MenubarMenu,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
   MenubarTrigger,
 } from "../ui/menubar";
 
@@ -47,23 +50,51 @@ const Nav = () => {
       url: "/api/admin/menus",
       method: "GET",
     }).then((response) => {
-      console.log(response);
       setMenu(response.data.data);
     });
   };
 
   const getMenuContent = (menuId) => {
     const childMenu = menu.filter(
-      (e) => e.groupId === menuId && e.menuId !== menuId
+      (e) => e.menuId !== menuId && e.groupId === menuId
     );
     return (
       <MenubarContent>
-        {childMenu.map((m) => (
+        {childMenu.map((m) => {
+          if (m.depth === 2 && m.childCount === 0) {
+            return (
+              <Link to={m.menuUrl} key={m.menuId}>
+                <MenubarItem>{m.menuName}</MenubarItem>
+              </Link>
+            );
+          } else if (m.depth === 2 && m.childCount > 0) {
+            return (
+              <MenubarSub key={m.menuId}>
+                <MenubarSubTrigger>{m.menuName}</MenubarSubTrigger>
+                {getSubMenuContent(menuId, m.menuId)}
+              </MenubarSub>
+            );
+          }
+        })}
+      </MenubarContent>
+    );
+  };
+
+  const getSubMenuContent = (menuId, childMenuId) => {
+    const subChildMenu = menu.filter(
+      (e) =>
+        e.menuId !== menuId &&
+        e.groupId === menuId &&
+        e.parentMenuId === childMenuId
+    );
+    return (
+      <MenubarSubContent>
+        {subChildMenu.map((m) => (
           <Link to={m.menuUrl} key={m.menuId}>
             <MenubarItem>{m.menuName}</MenubarItem>
           </Link>
         ))}
-      </MenubarContent>
+      </MenubarSubContent>
     );
   };
 
@@ -118,7 +149,9 @@ const Nav = () => {
                     <Link to="/user/profile">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link onClick={signOut}>Sign out</Link>
+                    <Link to="#" onClick={signOut}>
+                      Sign out
+                    </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
