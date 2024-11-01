@@ -57,7 +57,6 @@ const PostCreate = () => {
       .then((response) => {
         toast({
           title: "저장되었습니다.",
-          description: data.response.data.message,
         });
         gotoDetail(response.data.data.postId);
       })
