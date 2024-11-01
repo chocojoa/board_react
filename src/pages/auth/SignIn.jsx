@@ -4,10 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 import authSlice from "@/store/authSlice";
 import useAxios from "@/hooks/useAxios";
+import { useToast } from "@/hooks/use-toast";
 
 import { Baby } from "lucide-react";
 
-import Swal from "sweetalert2";
 import signInFormSchema from "@/components/formSchema/SignInFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -18,6 +18,7 @@ const SignIn = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const api = useAxios();
+  const { toast } = useToast();
 
   const formSchema = signInFormSchema();
 
@@ -40,11 +41,10 @@ const SignIn = () => {
         navigate("/");
       })
       .catch((data) => {
-        Swal.fire({
-          icon: "error",
+        toast({
+          variant: "destructive",
           title: "문제가 발생하였습니다.",
-          text: data.response.data.message,
-          timer: 2000,
+          description: data.response.data.message,
         });
       });
   };

@@ -2,11 +2,12 @@ import store from "@/store";
 import authSlice from "@/store/authSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
+import { useToast } from "./use-toast";
 
 const useAxios = () => {
   const token = store.getState().auth.token;
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const instance = axios.create({
     timeout: 5000,
@@ -58,24 +59,21 @@ const useAxios = () => {
             refreshSubscribers = [];
 
             // 갱신된 토큰을 원래 요청에 설정
-            originalRequest.headers[
-              "Authorization"
-            ] = `Bearer ${data.data.token.accessToken}`;
+            originalRequest.headers["Authorization"] =
+              `Bearer ${data.data.token.accessToken}`;
 
             isRefreshing = false;
 
             return axios(originalRequest);
           } catch (err) {
-            Swal.fire({
-              icon: "warning",
+            toast({
+              variant: "destructive",
               title: "사용시간이 만료되어 로그아웃 되었습니다.",
-              timer: 2000,
-            }).then(() => {
-              isRefreshing = false;
-              store.dispatch(authSlice.actions.signOut());
-              navigate("/");
-              return Promise.reject(err);
             });
+            isRefreshing = false;
+            store.dispatch(authSlice.actions.signOut());
+            navigate("/");
+            return Promise.reject(err);
           }
         }
 

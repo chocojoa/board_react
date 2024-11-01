@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
-import Swal from "sweetalert2";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
@@ -11,10 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import PostForm from "@/components/form/PostForm";
 import postFormSchema from "@/components/formSchema/PostFormSchema";
+import { useToast } from "@/hooks/use-toast";
 
 const PostCreate = () => {
   const navigate = useNavigate();
   const api = useAxios();
+  const { toast } = useToast();
 
   const { categoryId } = useParams();
   const user = useSelector((state) => {
@@ -52,16 +53,21 @@ const PostCreate = () => {
         content: data.content,
         userId: user.userId,
       },
-    }).then((response) => {
-      const postId = response.data.data.postId;
-      Swal.fire({
-        icon: "success",
-        title: "저장되었습니다.",
-        timer: 2000,
-      }).then(() => {
-        gotoDetail(postId);
+    })
+      .then((response) => {
+        toast({
+          title: "저장되었습니다.",
+          description: data.response.data.message,
+        });
+        gotoDetail(response.data.data.postId);
+      })
+      .catch((data) => {
+        toast({
+          variant: "destructive",
+          title: "문제가 발생하였습니다.",
+          description: data.response.data.message,
+        });
       });
-    });
   };
 
   return (

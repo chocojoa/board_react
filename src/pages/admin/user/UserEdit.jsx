@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import Swal from "sweetalert2";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
+import { useToast } from "@/hooks/use-toast";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import userFormSchema from "@/components/formSchema/UserFormSchema";
 const UserEdit = () => {
   const navigate = useNavigate();
   const api = useAxios();
+  const { toast } = useToast();
 
   const { userId } = useParams();
   const user = useSelector((state) => {
@@ -65,17 +66,22 @@ const UserEdit = () => {
         email: data.email,
         password: data.password,
         verifyPassword: data.verifyPassword,
-        userId: user.userId,
+        modifiedBy: user.userId,
       },
-    }).then(() => {
-      Swal.fire({
-        icon: "success",
-        title: "수정되었습니다.",
-        timer: 2000,
-      }).then(() => {
+    })
+      .then(() => {
+        toast({
+          title: "수정되었습니다.",
+        });
         gotoDetail(userId);
+      })
+      .catch((data) => {
+        toast({
+          variant: "destructive",
+          title: "문제가 발생하였습니다.",
+          description: data.response.data.message,
+        });
       });
-    });
   };
 
   useEffect(() => {

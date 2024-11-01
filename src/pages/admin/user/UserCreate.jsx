@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
-import Swal from "sweetalert2";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
+import { useToast } from "@/hooks/use-toast";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import UserForm from "@/components/form/UserForm";
 const UserCreate = () => {
   const navigate = useNavigate();
   const api = useAxios();
+  const { toast } = useToast();
 
   const user = useSelector((state) => {
     return state.auth.user;
@@ -47,22 +48,27 @@ const UserCreate = () => {
       url: `/api/admin/users`,
       method: "POST",
       data: {
-        userName: data.title,
-        email: data.content,
+        userName: data.userName,
+        email: data.email,
         password: data.password,
         verifyPassword: data.verifyPassword,
-        userId: user.userId,
+        createdBy: user.userId,
       },
-    }).then((response) => {
-      const userId = response.data.data.userId;
-      Swal.fire({
-        icon: "success",
-        title: "저장되었습니다.",
-        timer: 2000,
-      }).then(() => {
+    })
+      .then((response) => {
+        const userId = response.data.data.userId;
+        toast({
+          title: "저장되었습니다.",
+        });
         gotoDetail(userId);
+      })
+      .catch((data) => {
+        toast({
+          variant: "destructive",
+          title: "문제가 발생하였습니다.",
+          description: data.response.data.message,
+        });
       });
-    });
   };
 
   return (
