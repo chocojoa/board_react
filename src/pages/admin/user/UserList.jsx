@@ -52,7 +52,7 @@ const UserList = () => {
           const userId = row.original.userId;
           return (
             <Link
-              to={`/users/${userId}`}
+              to={`/admin/users/${userId}`}
               state={{ searchCondition: paramsRef.current }}
             >
               {row.getValue("userName")}

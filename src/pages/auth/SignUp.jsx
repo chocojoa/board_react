@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Baby } from "lucide-react";
-import Swal from "sweetalert2";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
@@ -10,10 +9,12 @@ import { Button } from "@/components/ui/button";
 import UserForm from "@/components/form/UserForm";
 import userFormSchema from "@/components/formSchema/UserFormSchema";
 import { Form } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const api = useAxios();
+  const { toast } = useToast();
 
   const formSchema = userFormSchema();
 
@@ -33,22 +34,17 @@ const SignUp = () => {
       method: "POST",
       data,
     })
-      .then((response) => {
-        Swal.fire({
-          icon: "success",
+      .then(() => {
+        toast({
           title: "계정이 생성되었습니다.",
-          text: response.data.message,
-          timer: 2000,
-        }).then(() => {
-          navigate("/auth/signIn");
         });
+        navigate("/auth/signIn");
       })
       .catch((data) => {
-        Swal.fire({
-          icon: "error",
+        toast({
+          variant: "destructive",
           title: "문제가 발생하였습니다.",
-          text: data.response.data.message,
-          timer: 2000,
+          description: data.response.data.message,
         });
       });
   };

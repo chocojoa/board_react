@@ -117,15 +117,23 @@ const MenuList = () => {
       url: "/api/admin/menus",
       method: "POST",
       data: data,
-    }).then(() => {
-      toast({
-        title: "저장되었습니다.",
+    })
+      .then(() => {
+        toast({
+          title: "저장되었습니다.",
+        });
+        setSelectedMenu("");
+        retrieveMenus();
+        setDialogOpen(false);
+        resetModifyForm();
+      })
+      .catch((data) => {
+        toast({
+          variant: "destructive",
+          title: "문제가 발생하였습니다.",
+          description: data.response.data.message,
+        });
       });
-      setSelectedMenu("");
-      retrieveMenus();
-      setDialogOpen(false);
-      resetModifyForm();
-    });
   };
 
   const modifyMenu = (data) => {
@@ -137,6 +145,12 @@ const MenuList = () => {
     }).then(() => {
       toast({
         title: "수정되었습니다.",
+      }).catch((data) => {
+        toast({
+          variant: "destructive",
+          title: "문제가 발생하였습니다.",
+          description: data.response.data.message,
+        });
       });
     });
   };
@@ -145,14 +159,22 @@ const MenuList = () => {
     api({
       url: `/api/admin/menus/${selectedMenu}`,
       method: "DELETE",
-    }).then(() => {
-      toast({
-        title: "삭제되었습니다.",
+    })
+      .then(() => {
+        toast({
+          title: "삭제되었습니다.",
+        });
+        setSelectedMenu("");
+        retrieveMenus();
+        resetModifyForm();
+      })
+      .catch((data) => {
+        toast({
+          variant: "destructive",
+          title: "문제가 발생하였습니다.",
+          description: data.response.data.message,
+        });
       });
-      setSelectedMenu("");
-      retrieveMenus();
-      resetModifyForm();
-    });
   };
 
   /**
