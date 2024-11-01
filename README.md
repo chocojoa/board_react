@@ -4,11 +4,11 @@
 - vite로 프로젝트를 생성하였습니다. (npm create vite@latest)
 
 # 사용한 라이브러리
+
 - tailwindcss (https://tailwindcss.com/)
 - shadcn/ui (https://ui.shadcn.com/)
 - tanstack table (https://tanstack.com/table/latest)
 - axios (https://axios-http.com/kr/)
 - react hook form (https://react-hook-form.com/)
 - lucide icon (https://lucide.dev/)
-- sweetalert2 (https://sweetalert2.github.io/)
 - zod (https://zod.dev/)
