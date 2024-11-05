@@ -39,7 +39,7 @@ const useAxios = () => {
       if (
         error.response &&
         error.response.status === 401 &&
-        error.response.data.errorCode === "JWT_TOKEN_EXPIRED"
+        error.response.data.errorCode === "JWT_TOKEN_IS_EXPIRED"
       ) {
         // 토큰 갱신 중인지 확인
         if (!isRefreshing) {
