@@ -67,7 +67,7 @@ const UserList = () => {
         enableSorting: true,
       },
       {
-        accessorKey: "createdDate",
+        accessorKey: "createdAt",
         header: "등록일",
         size: 100,
         enableSorting: true,
