@@ -26,10 +26,7 @@ import MenuForm from "@/components/form/MenuForm";
 import "rc-tree/assets/index.css";
 
 const MenuList = () => {
-  const breadCrumbList = [
-    { url: null, name: "관리자" },
-    { url: "/admin/menus", name: "메뉴관리" },
-  ];
+  const pageTitle = "메뉴관리";
 
   const user = useSelector((state) => {
     return state.auth.user;
@@ -41,6 +38,18 @@ const MenuList = () => {
   const [treeData, setTreeData] = useState(null);
   const [selectedMenu, setSelectedMenu] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
+
+  const retrieveBreadcrumbs = () => {
+    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
+    api({
+      url: encodeURI(url),
+      method: "GET",
+    }).then((response) => {
+      setBreadcrumbs(response.data.data);
+    });
+  };
 
   const formSchema = menuFormSchema();
 
@@ -247,14 +256,15 @@ const MenuList = () => {
 
   useEffect(() => {
     retrieveMenus();
+    retrieveBreadcrumbs();
   }, []);
 
   return (
-    <>
-      <div className="my-4">
-        <PageHeader title="메뉴관리" itemList={breadCrumbList} />
-      </div>
-      <div className="flex space-x-6">
+    <div className="my-4">
+      {breadcrumbs.length > 0 && (
+        <PageHeader title={pageTitle} itemList={breadcrumbs} />
+      )}
+      <div className="flex space-x-6 mt-4">
         <Card className="w-1/4">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -335,7 +345,7 @@ const MenuList = () => {
           </Form>
         </Card>
       </div>
-    </>
+    </div>
   );
 };
 

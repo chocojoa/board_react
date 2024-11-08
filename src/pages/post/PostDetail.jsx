@@ -10,6 +10,8 @@ import CommentList from "./CommentList";
 import CommentCreate from "./CommentCreate";
 
 const PostDetail = () => {
+  const pageTitle = "자유게시판";
+
   const navigate = useNavigate();
   const api = useAxios();
 
@@ -18,18 +20,24 @@ const PostDetail = () => {
   const [comments, setComments] = useState([]);
   const location = useLocation();
 
-  const breadCrumbList = [
-    { url: `/boards/${categoryId}/posts`, name: "자유게시판" },
-  ];
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  const gotoEdit = () => {
-    navigate(`/boards/${categoryId}/posts/${postId}/edit`);
+  /**
+   * 네비게이션 조회
+   */
+  const retrieveBreadcrumbs = () => {
+    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
+    api({
+      url: encodeURI(url),
+      method: "GET",
+    }).then((response) => {
+      setBreadcrumbs(response.data.data);
+    });
   };
 
-  const gotoList = () => {
-    navigate(`/boards/${categoryId}/posts`, { state: location.state });
-  };
-
+  /**
+   * 게시글 조회
+   */
   const retrievePost = () => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}`,
@@ -39,6 +47,9 @@ const PostDetail = () => {
     });
   };
 
+  /**
+   * 코멘트 조회
+   */
   const retrieveCommentList = () => {
     api({
       url: `/api/boards/${categoryId}/posts/${postId}/comments`,
@@ -48,29 +59,44 @@ const PostDetail = () => {
     });
   };
 
+  /**
+   * 수정화면으로 이동
+   */
+  const gotoEdit = () => {
+    navigate(`/boards/${categoryId}/posts/${postId}/edit`);
+  };
+
+  /**
+   * 목록화면으로 이동
+   */
+  const gotoList = () => {
+    navigate(`/boards/${categoryId}/posts`, { state: location.state });
+  };
+
   useEffect(() => {
     retrievePost();
     retrieveCommentList();
+    retrieveBreadcrumbs();
   }, []);
 
   return (
-    <>
-      <PageHeader title="자유게시판" itemList={breadCrumbList} />
+    <div className="my-4">
+      {breadcrumbs.length > 0 && (
+        <PageHeader title={pageTitle} itemList={breadcrumbs} />
+      )}
       <div>
-        <div>
-          <div className="flex justify-between mx-1 pt-4 pb-2">
-            <div>
-              <span className="font-semibold">{post.title}</span>
-            </div>
-            <div className="space-x-2 text-sm">
-              <span>등록일: {post.createdDate}</span>
-              <span>작성자: {post.author}</span>
-              <span>조회수: {post.viewCount}</span>
-            </div>
+        <div className="flex justify-between mx-1 pt-4 pb-2">
+          <div>
+            <span className="font-semibold">{post.title}</span>
           </div>
-          <div className="w-full border rounded-sm px-2 py-2">
-            <p className="whitespace-pre-wrap">{post.content}</p>
+          <div className="space-x-2 text-sm">
+            <span>등록일: {post.createdDate}</span>
+            <span>작성자: {post.author}</span>
+            <span>조회수: {post.viewCount}</span>
           </div>
+        </div>
+        <div className="w-full border rounded-sm px-2 py-2">
+          <p className="whitespace-pre-wrap">{post.content}</p>
         </div>
       </div>
       <div className="flex w-full justify-end mt-4">
@@ -98,7 +124,7 @@ const PostDetail = () => {
           retrieveCommentList={retrieveCommentList}
         />
       </div>
-    </>
+    </div>
   );
 };
 

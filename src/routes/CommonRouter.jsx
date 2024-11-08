@@ -18,6 +18,7 @@ import UserCreate from "@/pages/admin/user/UserCreate";
 import UserDetail from "@/pages/admin/user/UserDetail";
 import UserEdit from "@/pages/admin/user/UserEdit";
 import MenuList from "@/pages/admin/menu/MenuList";
+import Role from "@/pages/admin/role/Role";
 
 const CommonRouter = () => {
   const auth = useSelector((state) => state.auth);
@@ -63,6 +64,7 @@ const CommonRouter = () => {
               <Route path="/admin/users/:userId" element={<UserDetail />} />
               <Route path="/admin/users/:userId/edit" element={<UserEdit />} />
               <Route path="/admin/menus" element={<MenuList />} />
+              <Route path="/admin/roles" element={<Role />} />
               <Route path="/user/profile" element={<Profile />} />
             </Route>
             <Route path="/*" element={<NotFound />} />

@@ -7,6 +7,8 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 
 const UserDetail = () => {
+  const pageTitle = "사용자관리";
+
   const navigate = useNavigate();
   const api = useAxios();
 
@@ -14,16 +16,24 @@ const UserDetail = () => {
   const [user, setUser] = useState({});
   const location = useLocation();
 
-  const breadCrumbList = [{ url: `/admin/users`, name: "사용자관리" }];
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  const gotoEdit = () => {
-    navigate(`/admin/users/${userId}/edit`);
+  /**
+   * 네비게이션 조회
+   */
+  const retrieveBreadcrumbs = () => {
+    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
+    api({
+      url: encodeURI(url),
+      method: "GET",
+    }).then((response) => {
+      setBreadcrumbs(response.data.data);
+    });
   };
 
-  const gotoList = () => {
-    navigate(`/admin/users`, { state: location.state });
-  };
-
+  /**
+   * 사용자 조회
+   */
   const retrieveUser = () => {
     api({
       url: `/api/admin/users/${userId}`,
@@ -33,13 +43,30 @@ const UserDetail = () => {
     });
   };
 
+  /**
+   * 수정화면으로 이동
+   */
+  const gotoEdit = () => {
+    navigate(`/admin/users/${userId}/edit`);
+  };
+
+  /**
+   * 목록화면으로 이동
+   */
+  const gotoList = () => {
+    navigate(`/admin/users`, { state: location.state });
+  };
+
   useEffect(() => {
     retrieveUser();
+    retrieveBreadcrumbs();
   }, []);
 
   return (
-    <>
-      <PageHeader title="사용자관리" itemList={breadCrumbList} />
+    <div className="py-4">
+      {breadcrumbs.length > 0 && (
+        <PageHeader title="사용자관리" itemList={breadcrumbs} />
+      )}
       <div className="space-y-2 my-2">
         <div className="w-full">
           <span>이름: {user.userName}</span>
@@ -58,7 +85,7 @@ const UserDetail = () => {
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
