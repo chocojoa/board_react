@@ -1,18 +1,21 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
+import { useToast } from "@/hooks/use-toast";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import PostForm from "@/components/form/PostForm";
 import postFormSchema from "@/components/formSchema/PostFormSchema";
-import { useToast } from "@/hooks/use-toast";
 
 const PostCreate = () => {
+  const pageTitle = "자유게시판";
+
   const navigate = useNavigate();
   const api = useAxios();
   const { toast } = useToast();
@@ -22,16 +25,19 @@ const PostCreate = () => {
     return state.auth.user;
   });
 
-  const breadCrumbList = [
-    { url: `/boards/${categoryId}/posts`, name: `자유게시판` },
-  ];
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  const gotoDetail = (postId) => {
-    navigate(`/boards/${categoryId}/posts/${postId}`);
-  };
-
-  const gotoList = () => {
-    navigate(`/boards/${categoryId}/posts`);
+  /**
+   * 네비게이션 조회
+   */
+  const retrieveBreadcrumbs = () => {
+    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
+    api({
+      url: encodeURI(url),
+      method: "GET",
+    }).then((response) => {
+      setBreadcrumbs(response.data.data);
+    });
   };
 
   const formSchema = postFormSchema();
@@ -44,6 +50,10 @@ const PostCreate = () => {
     },
   });
 
+  /**
+   * 게시글 저장
+   * @param {*} data form dataf
+   */
   const onSubmit = (data) => {
     api({
       url: `/api/boards/${categoryId}/posts`,
@@ -69,9 +79,30 @@ const PostCreate = () => {
       });
   };
 
+  /**
+   * 상세화면으로 이동
+   * @param {*} postId 게시글 아이디
+   */
+  const gotoDetail = (postId) => {
+    navigate(`/boards/${categoryId}/posts/${postId}`);
+  };
+
+  /**
+   * 목록화면으로 이동
+   */
+  const gotoList = () => {
+    navigate(`/boards/${categoryId}/posts`);
+  };
+
+  useEffect(() => {
+    retrieveBreadcrumbs();
+  }, []);
+
   return (
-    <>
-      <PageHeader title="자유게시판" itemList={breadCrumbList} />
+    <div className="my-4">
+      {breadcrumbs.length > 0 && (
+        <PageHeader title={pageTitle} itemList={breadcrumbs} />
+      )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <PostForm form={form} />
@@ -85,7 +116,7 @@ const PostCreate = () => {
           </div>
         </form>
       </Form>
-    </>
+    </div>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { format } from "date-fns";
 
 import useAxios from "@/hooks/useAxios";
 import usePagination from "@/hooks/usePagination";
@@ -11,9 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import DatePickerWithRange from "@/components/DataPickerWithRange";
-import { format } from "date-fns";
 
 const PostList = () => {
+  const pageTitle = "자유게시판";
+
   const navigate = useNavigate();
   const api = useAxios();
 
@@ -34,9 +36,20 @@ const PostList = () => {
     endCreatedDate: "",
   });
 
-  const breadCrumbList = [
-    { url: `/boards/${categoryId}/posts`, name: `자유게시판` },
-  ];
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
+
+  /**
+   * 네비게이션 조회
+   */
+  const retrieveBreadcrumbs = () => {
+    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
+    api({
+      url: encodeURI(url),
+      method: "GET",
+    }).then((response) => {
+      setBreadcrumbs(response.data.data);
+    });
+  };
 
   const columns = useMemo(
     () => [
@@ -86,10 +99,6 @@ const PostList = () => {
     []
   );
 
-  const gotoRegister = () => {
-    navigate(`/boards/${categoryId}/posts/create`);
-  };
-
   const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination(
     searchParams ? searchParams.pageSize : 10,
     searchParams ? searchParams.pageIndex : 0
@@ -100,6 +109,9 @@ const PostList = () => {
     searchParams ? searchParams.sortDirection : "DESC"
   );
 
+  /**
+   * 게시글 조회
+   */
   const retrievePostList = () => {
     const paramsObj = {
       startIndex: pageIndex * pageSize,
@@ -129,6 +141,10 @@ const PostList = () => {
     });
   };
 
+  /**
+   * 검색조건 - Input 이벤트
+   * @param {*} e
+   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSearchCondition((prevState) => ({
@@ -137,27 +153,43 @@ const PostList = () => {
     }));
   };
 
+  /**
+   * 검색조건 - 날짜 이벤트
+   * @param {*} param0
+   */
   const handleCreatedDate = ({ from, to }) => {
     setSearchCondition((prevState) => {
       return { ...prevState, startCreatedDate: from, endCreatedDate: to };
     });
   };
 
+  /**
+   * 검색조건 - 엔터키 이벤트
+   * @param {*} e
+   */
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       retrievePostList();
     }
   };
 
+  const gotoRegister = () => {
+    navigate(`/boards/${categoryId}/posts/create`);
+  };
+
   useEffect(() => {
     retrievePostList();
   }, [pagination, sorting]);
 
+  useEffect(() => {
+    retrieveBreadcrumbs();
+  }, []);
+
   return (
-    <>
-      <div className="my-4">
-        <PageHeader title="자유게시판" itemList={breadCrumbList} />
-      </div>
+    <div className="my-4">
+      {breadcrumbs.length > 0 && (
+        <PageHeader title={pageTitle} itemList={breadcrumbs} />
+      )}
       <div>
         <div className="flex w-full justify-center items-center">
           <div className="flex w-full items-center">
@@ -214,14 +246,14 @@ const PostList = () => {
           onSortingChange={onSortingChange}
         />
       </div>
-      <div className="flex w-full justify-end py-4">
+      <div className="flex w-full justify-end">
         <div className="items-end">
           <Button type="button" onClick={gotoRegister}>
             등록
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
