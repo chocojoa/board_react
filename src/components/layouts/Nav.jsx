@@ -45,9 +45,9 @@ const Nav = () => {
     });
   };
 
-  const retrieveMenus = () => {
+  const retrieveUserMenuList = () => {
     api({
-      url: "/api/admin/menus",
+      url: `/api/common/userMenu/${user.userId}`,
       method: "GET",
     }).then((response) => {
       setMenu(response.data.data);
@@ -56,50 +56,24 @@ const Nav = () => {
 
   const getMenuContent = (menuId) => {
     const childMenu = menu.filter(
-      (e) => e.menuId !== menuId && e.groupId === menuId
+      (e) => e.menuId !== menuId && e.parentMenuId === menuId
     );
     return (
       <MenubarContent>
-        {childMenu.map((m) => {
-          if (m.depth === 2 && m.childCount === 0) {
-            return (
+        {childMenu.map(
+          (m) =>
+            m.childCount === 0 && (
               <Link to={m.menuUrl} key={m.menuId}>
                 <MenubarItem>{m.menuName}</MenubarItem>
               </Link>
-            );
-          } else if (m.depth === 2 && m.childCount > 0) {
-            return (
-              <MenubarSub key={m.menuId}>
-                <MenubarSubTrigger>{m.menuName}</MenubarSubTrigger>
-                {getSubMenuContent(menuId, m.menuId)}
-              </MenubarSub>
-            );
-          }
-        })}
+            )
+        )}
       </MenubarContent>
     );
   };
 
-  const getSubMenuContent = (menuId, childMenuId) => {
-    const subChildMenu = menu.filter(
-      (e) =>
-        e.menuId !== menuId &&
-        e.groupId === menuId &&
-        e.parentMenuId === childMenuId
-    );
-    return (
-      <MenubarSubContent>
-        {subChildMenu.map((m) => (
-          <Link to={m.menuUrl} key={m.menuId}>
-            <MenubarItem>{m.menuName}</MenubarItem>
-          </Link>
-        ))}
-      </MenubarSubContent>
-    );
-  };
-
   useEffect(() => {
-    retrieveMenus();
+    retrieveUserMenuList();
   }, []);
 
   return (
@@ -114,14 +88,14 @@ const Nav = () => {
               <div className="flex flex-shrink-0 items-center space-x-6 mx-10 text-sm/[17px]">
                 <Menubar className="border-none shadow-none">
                   {menu.map((m) => {
-                    if (m.depth === 1 && m.childCount > 0) {
+                    if (m.parentMenuId === 0 && m.childCount > 0) {
                       return (
                         <MenubarMenu key={m.menuId}>
                           <MenubarTrigger>{m.menuName}</MenubarTrigger>
                           {getMenuContent(m.menuId)}
                         </MenubarMenu>
                       );
-                    } else if (m.depth === 1 && m.childCount === 0) {
+                    } else if (m.parentMenuId === 0 && m.childCount === 0) {
                       return (
                         <MenubarMenu key={m.menuId}>
                           <Link to={m.menuUrl}>
