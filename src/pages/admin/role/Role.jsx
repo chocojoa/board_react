@@ -4,6 +4,8 @@ import useAxios from "@/hooks/useAxios";
 import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleList from "./RoleList";
+import UserRole from "./UserRole";
+import MenuRole from "./MenuRole";
 
 const Role = () => {
   const pageTitle = "권한관리";
@@ -44,10 +46,10 @@ const Role = () => {
           <RoleList />
         </TabsContent>
         <TabsContent value="menuByRole" className="pt-4">
-          공사중 입니다.
+          <MenuRole />
         </TabsContent>
         <TabsContent value="menuByUser" className="pt-4">
-          공사중 입니다.
+          <UserRole />
         </TabsContent>
       </Tabs>
     </div>

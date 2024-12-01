@@ -36,6 +36,7 @@ const useAxios = () => {
     },
     async (error) => {
       const originalRequest = error.config;
+      console.log(error);
       if (
         error.response &&
         error.response.status === 401 &&
