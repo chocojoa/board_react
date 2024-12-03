@@ -21,9 +21,7 @@ const UserEdit = () => {
   const { toast } = useToast();
 
   const { userId } = useParams();
-  const user = useSelector((state) => {
-    return state.auth.user;
-  });
+  const user = useSelector((state) => state.auth.user);
 
   const [breadcrumbs, setBreadcrumbs] = useState([]);
 

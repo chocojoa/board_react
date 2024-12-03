@@ -21,9 +21,7 @@ const UserCreate = () => {
   const api = useAxios();
   const { toast } = useToast();
 
-  const user = useSelector((state) => {
-    return state.auth.user;
-  });
+  const user = useSelector((state) => state.auth.user);
 
   const [breadCrumbs, setBreadcrumbs] = useState([]);
 

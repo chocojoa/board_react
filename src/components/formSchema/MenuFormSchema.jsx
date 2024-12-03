@@ -16,6 +16,7 @@ const menuFormSchema = () => {
       required_error: "정렬순서가 입력되지 않았습니다.",
       invalid_type_error: "숫자 형식이 아닙니다.",
     }),
+    icon: z.string(),
     usageStatus: z.boolean(),
   });
 };

@@ -11,16 +11,18 @@ import {
   REGISTER,
 } from "redux-persist";
 import authSlice from "./authSlice";
+import menuSlice from "./menuSlice";
 
 const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  whitelist: ["auth"],
+  whitelist: ["auth", "menu"],
 };
 
 const rootReducer = combineReducers({
   auth: authSlice.reducer,
+  menu: menuSlice.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

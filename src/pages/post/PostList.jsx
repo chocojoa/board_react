@@ -248,7 +248,7 @@ const PostList = () => {
       </div>
       <div className="flex w-full justify-end">
         <div className="items-end">
-          <Button type="button" onClick={gotoRegister}>
+          <Button type="button" variant="outline" onClick={gotoRegister}>
             등록
           </Button>
         </div>
