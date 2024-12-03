@@ -18,9 +18,7 @@ import {
 import Tree from "rc-tree";
 
 const MenuRole = () => {
-  const user = useSelector((state) => {
-    return state.auth.user;
-  });
+  const user = useSelector((state) => state.auth.user);
 
   const api = useAxios();
   const { toast } = useToast();

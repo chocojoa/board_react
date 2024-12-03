@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import SignInForm from "@/components/form/SignInForm";
 import { Button } from "@/components/ui/button";
+import menuSlice from "@/store/menuSlice";
 
 const SignIn = () => {
   const dispatch = useDispatch();
@@ -38,7 +39,9 @@ const SignIn = () => {
     })
       .then((response) => {
         dispatch(authSlice.actions.signIn(response.data.data));
-        navigate("/");
+        const accessToken = response.data.data.token.accessToken;
+        const userId = response.data.data.user.userId;
+        retrieveUserMenuList(accessToken, userId);
       })
       .catch((data) => {
         toast({
@@ -47,6 +50,19 @@ const SignIn = () => {
           description: data.response.data.message,
         });
       });
+  };
+
+  const retrieveUserMenuList = (accessToken, userId) => {
+    api({
+      url: `/api/common/userMenu/${userId}`,
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }).then((response) => {
+      dispatch(menuSlice.actions.setUserMenu(response.data.data));
+      navigate("/");
+    });
   };
 
   return (

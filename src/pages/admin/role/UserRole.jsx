@@ -20,9 +20,7 @@ import {
 } from "@/components/ui/select";
 
 const UserRole = () => {
-  const user = useSelector((state) => {
-    return state.auth.user;
-  });
+  const user = useSelector((state) => state.auth.user);
 
   const api = useAxios();
   const { toast } = useToast();
@@ -229,12 +227,16 @@ const UserRole = () => {
         </div>
         <div className="w-2/6 space-y-4 text-center content-center">
           <div>
-            <Button variant="outline" onClick={addUser}>
+            <Button variant="outline" onClick={addUser} disabled={roleId === 0}>
               추가 {">>"}
             </Button>
           </div>
           <div>
-            <Button variant="outline" onClick={removeUser}>
+            <Button
+              variant="outline"
+              onClick={removeUser}
+              disabled={role === 0}
+            >
               {"<<"} 삭제
             </Button>
           </div>

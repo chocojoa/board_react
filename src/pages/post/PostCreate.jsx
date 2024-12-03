@@ -21,9 +21,7 @@ const PostCreate = () => {
   const { toast } = useToast();
 
   const { categoryId } = useParams();
-  const user = useSelector((state) => {
-    return state.auth.user;
-  });
+  const user = useSelector((state) => state.auth.user);
 
   const [breadcrumbs, setBreadcrumbs] = useState([]);
 
@@ -109,7 +107,7 @@ const PostCreate = () => {
           <div className="flex w-full justify-end mt-4">
             <div className="items-end space-x-2">
               <Button type="submit">저장</Button>
-              <Button type="button" onClick={gotoList}>
+              <Button type="button" variant="outline" onClick={gotoList}>
                 목록
               </Button>
             </div>

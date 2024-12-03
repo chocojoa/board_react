@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import useAxios from "@/hooks/useAxios";
 
@@ -12,6 +13,7 @@ import CommentCreate from "./CommentCreate";
 const PostDetail = () => {
   const pageTitle = "자유게시판";
 
+  const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const api = useAxios();
 
@@ -40,7 +42,7 @@ const PostDetail = () => {
    */
   const retrievePost = () => {
     api({
-      url: `/api/boards/${categoryId}/posts/${postId}`,
+      url: `/api/boards/${categoryId}/posts/${postId}?userId=${user.userId}`,
       method: "GET",
     }).then((response) => {
       setPost(response.data.data);
@@ -104,7 +106,7 @@ const PostDetail = () => {
           <Button type="button" onClick={gotoEdit}>
             수정
           </Button>
-          <Button type="button" onClick={gotoList}>
+          <Button type="button" variant="outline" onClick={gotoList}>
             목록
           </Button>
         </div>

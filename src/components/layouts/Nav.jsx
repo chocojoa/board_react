@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Smile } from "lucide-react";
 
 import authSlice from "@/store/authSlice";
 import useAxios from "@/hooks/useAxios";
@@ -17,20 +15,17 @@ import {
   MenubarContent,
   MenubarItem,
   MenubarMenu,
-  MenubarSub,
-  MenubarSubContent,
-  MenubarSubTrigger,
   MenubarTrigger,
 } from "../ui/menubar";
+import LucideIcon from "../LucideIcon";
 
 const Nav = () => {
   const api = useAxios();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
+  const menu = useSelector((state) => state.menu);
   const user = auth.user;
-
-  const [menu, setMenu] = useState([]);
 
   const signOut = () => {
     api({
@@ -45,17 +40,8 @@ const Nav = () => {
     });
   };
 
-  const retrieveUserMenuList = () => {
-    api({
-      url: `/api/common/userMenu/${user.userId}`,
-      method: "GET",
-    }).then((response) => {
-      setMenu(response.data.data);
-    });
-  };
-
   const getMenuContent = (menuId) => {
-    const childMenu = menu.filter(
+    const childMenu = menu.menuList.filter(
       (e) => e.menuId !== menuId && e.parentMenuId === menuId
     );
     return (
@@ -64,17 +50,18 @@ const Nav = () => {
           (m) =>
             m.childCount === 0 && (
               <Link to={m.menuUrl} key={m.menuId}>
-                <MenubarItem>{m.menuName}</MenubarItem>
+                <MenubarItem>
+                  {m.icon && (
+                    <LucideIcon name={m.icon} size={20} className="mr-2" />
+                  )}
+                  {m.menuName}
+                </MenubarItem>
               </Link>
             )
         )}
       </MenubarContent>
     );
   };
-
-  useEffect(() => {
-    retrieveUserMenuList();
-  }, []);
 
   return (
     <>
@@ -87,24 +74,43 @@ const Nav = () => {
               </div>
               <div className="flex flex-shrink-0 items-center space-x-6 mx-10 text-sm/[17px]">
                 <Menubar className="border-none shadow-none">
-                  {menu.map((m) => {
-                    if (m.parentMenuId === 0 && m.childCount > 0) {
-                      return (
-                        <MenubarMenu key={m.menuId}>
-                          <MenubarTrigger>{m.menuName}</MenubarTrigger>
-                          {getMenuContent(m.menuId)}
-                        </MenubarMenu>
-                      );
-                    } else if (m.parentMenuId === 0 && m.childCount === 0) {
-                      return (
-                        <MenubarMenu key={m.menuId}>
-                          <Link to={m.menuUrl}>
-                            <MenubarTrigger>{m.menuName}</MenubarTrigger>
-                          </Link>
-                        </MenubarMenu>
-                      );
-                    }
-                  })}
+                  {menu.menuList.length > 0 &&
+                    menu.menuList.map((m) => {
+                      if (m.parentMenuId === 0 && m.childCount > 0) {
+                        return (
+                          <MenubarMenu key={m.menuId}>
+                            <MenubarTrigger>
+                              {m.icon && (
+                                <LucideIcon
+                                  name={m.icon}
+                                  size={20}
+                                  className="mr-2"
+                                />
+                              )}
+                              {m.menuName}
+                            </MenubarTrigger>
+                            {getMenuContent(m.menuId)}
+                          </MenubarMenu>
+                        );
+                      } else if (m.parentMenuId === 0 && m.childCount === 0) {
+                        return (
+                          <MenubarMenu key={m.menuId}>
+                            <Link to={m.menuUrl}>
+                              <MenubarTrigger>
+                                {m.icon && (
+                                  <LucideIcon
+                                    name={m.icon}
+                                    size={20}
+                                    className="mr-2"
+                                  />
+                                )}
+                                {m.menuName}
+                              </MenubarTrigger>
+                            </Link>
+                          </MenubarMenu>
+                        );
+                      }
+                    })}
                 </Menubar>
               </div>
             </div>
@@ -112,7 +118,7 @@ const Nav = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <div className="flex items-center">
-                    <Smile size={18} />
+                    <LucideIcon name="Smile" size={18} />
                     <span className="ml-2">
                       {user.userName} ({user.email})
                     </span>
@@ -123,9 +129,7 @@ const Nav = () => {
                     <Link to="/user/profile">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="#" onClick={signOut}>
-                      Sign out
-                    </Link>
+                    <Link onClick={signOut}>Sign out</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

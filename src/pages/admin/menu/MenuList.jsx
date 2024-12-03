@@ -28,14 +28,12 @@ import "rc-tree/assets/index.css";
 const MenuList = () => {
   const pageTitle = "메뉴관리";
 
-  const user = useSelector((state) => {
-    return state.auth.user;
-  });
+  const user = useSelector((state) => state.auth.user);
 
   const api = useAxios();
   const { toast } = useToast();
 
-  const [treeData, setTreeData] = useState(null);
+  const [treeData, setTreeData] = useState([]);
   const [selectedMenu, setSelectedMenu] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -61,6 +59,7 @@ const MenuList = () => {
       menuName: "",
       menuUrl: "",
       sortOrder: "",
+      icon: "",
       usageStatus: true,
     },
   });
@@ -73,9 +72,38 @@ const MenuList = () => {
       menuName: "",
       menuUrl: "",
       sortOrder: "",
+      icon: "",
       usageStatus: true,
     },
   });
+
+  /**
+   * RCTree용 JSON 생성 (재귀함수)
+   * @param {*} menuId
+   * @param {*} menus
+   * @returns
+   */
+  const getRcTreeData = (menuId, menus) => {
+    let childArray = [];
+    menus.forEach((element) => {
+      if (element.parentMenuId === menuId) {
+        let treeObject = {
+          key: element.menuId,
+          title: element.menuName,
+          depth: element.depth,
+          sortOrder: element.sortOrder,
+        };
+        if (element.childCount > 0) {
+          const childArray = getRcTreeData(element.menuId, menus);
+          if (childArray.length > 0) {
+            treeObject.children = childArray;
+          }
+        }
+        childArray.push(treeObject);
+      }
+    });
+    return childArray;
+  };
 
   /**
    * 메뉴 조회
@@ -115,6 +143,7 @@ const MenuList = () => {
         parentMenuId: menu.parentMenuId,
         menuUrl: menu.menuUrl,
         sortOrder: menu.sortOrder,
+        icon: menu.icon,
         usageStatus: menu.usageStatus,
       });
     });
@@ -151,17 +180,19 @@ const MenuList = () => {
       url: `/api/admin/menus/${data.menuId}`,
       method: "PUT",
       data: data,
-    }).then(() => {
-      toast({
-        title: "수정되었습니다.",
-      }).catch((data) => {
+    })
+      .then(() => {
+        toast({
+          title: "수정되었습니다.",
+        });
+      })
+      .catch((data) => {
         toast({
           variant: "destructive",
           title: "문제가 발생하였습니다.",
           description: data.response.data.message,
         });
       });
-    });
   };
 
   const removeMenu = () => {
@@ -184,34 +215,6 @@ const MenuList = () => {
           description: data.response.data.message,
         });
       });
-  };
-
-  /**
-   * RCTree용 JSON 생성 (재귀함수)
-   * @param {*} menuId
-   * @param {*} menus
-   * @returns
-   */
-  const getRcTreeData = (menuId, menus) => {
-    let childArray = [];
-    menus.forEach((element) => {
-      if (element.parentMenuId === menuId) {
-        let treeObject = {
-          key: element.menuId,
-          title: element.menuName,
-          depth: element.depth,
-          sortOrder: element.sortOrder,
-        };
-        if (element.childCount > 0) {
-          const childArray = getRcTreeData(element.menuId, menus);
-          if (childArray.length > 0) {
-            treeObject.children = childArray;
-          }
-        }
-        childArray.push(treeObject);
-      }
-    });
-    return childArray;
   };
 
   /**
@@ -239,6 +242,7 @@ const MenuList = () => {
       menuName: "",
       menuUrl: "",
       sortOrder: "",
+      icon: "",
       usageStatus: true,
     });
   };
@@ -250,6 +254,7 @@ const MenuList = () => {
       menuName: "",
       menuUrl: "",
       sortOrder: "",
+      icon: "",
       usageStatus: true,
     });
   };
@@ -311,7 +316,7 @@ const MenuList = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {treeData && (
+            {treeData.length > 0 && (
               <Tree
                 treeData={treeData}
                 onSelect={handleRcTree}
@@ -327,7 +332,7 @@ const MenuList = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle>메뉴 상세정보</CardTitle>
                   <div className="space-x-2">
-                    {selectedMenu > 0 && (
+                    {selectedMenu !== "" && (
                       <>
                         <Button type="submit">수정</Button>
                         <Button type="button" onClick={removeMenu}>
