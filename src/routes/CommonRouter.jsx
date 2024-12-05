@@ -46,23 +46,21 @@ const CommonRouter = () => {
             >
               <Route path="/" element={<Navigate replace to="/dashboard" />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/boards/:categoryId/posts" element={<PostList />} />
-              <Route
-                path="/boards/:categoryId/posts/create"
-                element={<PostCreate />}
-              />
-              <Route
-                path="/boards/:categoryId/posts/:postId"
-                element={<PostDetail />}
-              />
-              <Route
-                path="/boards/:categoryId/posts/:postId/edit"
-                element={<PostEdit />}
-              />
-              <Route path="/admin/users" element={<UserList />} />
-              <Route path="/admin/users/create" element={<UserCreate />} />
-              <Route path="/admin/users/:userId" element={<UserDetail />} />
-              <Route path="/admin/users/:userId/edit" element={<UserEdit />} />
+
+              <Route path="/boards/:categoryId/posts">
+                <Route index element={<PostList />} />
+                <Route path="create" element={<PostCreate />} />
+                <Route path=":postId" element={<PostDetail />} />
+                <Route path=":postId/edit" element={<PostEdit />} />
+              </Route>
+
+              <Route path="/admin/users">
+                <Route index element={<UserList />} />
+                <Route path="create" element={<UserCreate />} />
+                <Route path=":userId" element={<UserDetail />} />
+                <Route path=":userId/edit" element={<UserEdit />} />
+              </Route>
+
               <Route path="/admin/menus" element={<MenuList />} />
               <Route path="/admin/roles" element={<Role />} />
               <Route path="/user/profile" element={<Profile />} />
