@@ -5,11 +5,15 @@ const menuFormSchema = () => {
     menuId: z.number(),
     parentMenuId: z.number(),
     menuName: z
-      .string()
+      .string({
+        required_error: "메뉴명을 입력해 주세요"
+      })
       .trim()
       .min(1, { message: "메뉴명이 입력되지 않았습니다." }),
     menuUrl: z
-      .string()
+      .string({
+        required_error: "URL을 입력해 주세요"
+      })
       .trim()
       .min(1, { message: "URL이 입력되지 않았습니다." }),
     sortOrder: z.number({
