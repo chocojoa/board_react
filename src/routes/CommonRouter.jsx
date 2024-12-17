@@ -1,24 +1,24 @@
-import { Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { useSelector } from "react-redux";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import PrivateLayout from "@/components/layouts/PrivateLayout";
-import PublicLayout from "@/components/layouts/PublicLayout";
-import SignIn from "@/pages/auth/SignIn";
-import SignUp from "@/pages/auth/SignUp";
-import PostList from "@/pages/post/PostList";
-import NotFound from "@/pages/common/NotFound";
-import Dashboard from "@/pages/dashboard/Dashboard";
-import Profile from "@/pages/user/Profile";
-import PostCreate from "@/pages/post/PostCreate";
-import PostDetail from "@/pages/post/PostDetail";
-import PostEdit from "@/pages/post/PostEdit";
-import UserList from "@/pages/admin/user/UserList";
-import UserCreate from "@/pages/admin/user/UserCreate";
-import UserDetail from "@/pages/admin/user/UserDetail";
-import UserEdit from "@/pages/admin/user/UserEdit";
-import MenuList from "@/pages/admin/menu/MenuList";
-import Role from "@/pages/admin/role/Role";
+const PrivateLayout = lazy(() => import("@/components/layouts/PrivateLayout"));
+const PublicLayout = lazy(() => import("@/components/layouts/PublicLayout"));
+const SignIn = lazy(() => import("@/pages/auth/SignIn"));
+const SignUp = lazy(() => import("@/pages/auth/SignUp"));
+const Dashboard = lazy(() => import("@/pages/dashboard/Dashboard"));
+const PostList = lazy(() => import("@/pages/post/PostList"));
+const PostCreate = lazy(() => import("@/pages/post/PostCreate"));
+const PostDetail = lazy(() => import("@/pages/post/PostDetail"));
+const PostEdit = lazy(() => import("@/pages/post/PostEdit"));
+const Profile = lazy(() => import("@/pages/user/Profile"));
+const UserList = lazy(() => import("@/pages/admin/user/UserList"));
+const UserCreate = lazy(() => import("@/pages/admin/user/UserCreate"));
+const UserDetail = lazy(() => import("@/pages/admin/user/UserDetail"));
+const UserEdit = lazy(() => import("@/pages/admin/user/UserEdit"));
+const MenuList = lazy(() => import("@/pages/admin/menu/MenuList"));
+const Role = lazy(() => import("@/pages/admin/role/Role"));
+const NotFound = lazy(() => import("@/pages/common/NotFound"));
 
 const CommonRouter = () => {
   const auth = useSelector((state) => state.auth);
