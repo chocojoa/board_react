@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react";
-import useAxios from "@/hooks/useAxios";
-
 import PageHeader from "@/components/PageHeader";
 import {
   Card,
@@ -34,19 +31,6 @@ import {
 
 const Dashboard = () => {
   const pageTitle = "대시보드";
-  const api = useAxios();
-
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
 
   const chartData = [
     { month: "January", desktop: 186, mobile: 80 },
@@ -68,15 +52,9 @@ const Dashboard = () => {
     },
   };
 
-  useEffect(() => {
-    retrieveBreadcrumbs();
-  }, []);
-
   return (
     <div className="my-4">
-      {breadcrumbs.length > 0 && (
-        <PageHeader title={pageTitle} itemList={breadcrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardHeader>

@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react";
-import useAxios from "@/hooks/useAxios";
-
 import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleList from "./RoleList";
@@ -10,32 +7,9 @@ import MenuRole from "./MenuRole";
 const Role = () => {
   const pageTitle = "권한관리";
 
-  const api = useAxios();
-
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-
-  /**
-   * 네비게이션 조회
-   */
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
-
-  useEffect(() => {
-    retrieveBreadcrumbs();
-  }, []);
-
   return (
     <div className="py-4">
-      {breadcrumbs.length > 0 && (
-        <PageHeader title={pageTitle} itemList={breadcrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <Tabs defaultValue="role">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="role">권한관리</TabsTrigger>

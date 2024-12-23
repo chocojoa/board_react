@@ -36,21 +36,6 @@ const PostList = () => {
     endCreatedDate: "",
   });
 
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-
-  /**
-   * 네비게이션 조회
-   */
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
-
   const columns = useMemo(
     () => [
       {
@@ -181,15 +166,9 @@ const PostList = () => {
     retrievePostList();
   }, [pagination, sorting]);
 
-  useEffect(() => {
-    retrieveBreadcrumbs();
-  }, []);
-
   return (
     <div className="my-4">
-      {breadcrumbs.length > 0 && (
-        <PageHeader title={pageTitle} itemList={breadcrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <div>
         <div className="flex w-full justify-center items-center">
           <div className="flex w-full items-center">
