@@ -5,9 +5,26 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "./ui/breadcrumb";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
+import useAxios from "@/hooks/useAxios";
 
-const PageHeader = ({ title, itemList }) => {
+const PageHeader = ({ title }) => {
+  const api = useAxios();
+  const [items, setItems] = useState([]);
+
+  const retrieveBreadcrumbs = () => {
+    api({
+      url: encodeURI(`/api/admin/menus/breadcrumbs?menuName=${title}`),
+      method: "GET",
+    }).then((response) => {
+      setItems(response.data.data);
+    });
+  };
+
+  useEffect(() => {
+    retrieveBreadcrumbs();
+  }, []);
+
   return (
     <>
       <div className="flex items-center text-center mb-2">
@@ -16,7 +33,7 @@ const PageHeader = ({ title, itemList }) => {
             <BreadcrumbItem>
               <Link to="/">처음</Link>
             </BreadcrumbItem>
-            {itemList.map((item) => (
+            {items.map((item) => (
               <Fragment key={item.menuId}>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>

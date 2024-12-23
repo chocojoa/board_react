@@ -37,18 +37,6 @@ const MenuList = () => {
   const [selectedMenu, setSelectedMenu] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
-
   const formSchema = menuFormSchema();
 
   const createForm = useForm({
@@ -261,14 +249,11 @@ const MenuList = () => {
 
   useEffect(() => {
     retrieveMenus();
-    retrieveBreadcrumbs();
   }, []);
 
   return (
     <div className="my-4">
-      {breadcrumbs.length > 0 && (
-        <PageHeader title={pageTitle} itemList={breadcrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <div className="flex space-x-6 mt-4">
         <Card className="w-1/4">
           <CardHeader>
