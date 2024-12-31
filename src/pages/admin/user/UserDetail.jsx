@@ -16,21 +16,6 @@ const UserDetail = () => {
   const [user, setUser] = useState({});
   const location = useLocation();
 
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-
-  /**
-   * 네비게이션 조회
-   */
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
-
   /**
    * 사용자 조회
    */
@@ -59,14 +44,11 @@ const UserDetail = () => {
 
   useEffect(() => {
     retrieveUser();
-    retrieveBreadcrumbs();
   }, []);
 
   return (
     <div className="py-4">
-      {breadcrumbs.length > 0 && (
-        <PageHeader title="사용자관리" itemList={breadcrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <div className="space-y-2 my-2">
         <div className="w-full">
           <span>이름: {user.userName}</span>

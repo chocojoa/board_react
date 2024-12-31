@@ -4,7 +4,7 @@ import useAxios from "@/hooks/useAxios";
 import usePagination from "@/hooks/usePagination";
 import useSorting from "@/hooks/useSorting";
 
-import RoleModel from "./RoleModel";
+import RoleModal from "./RoleModal";
 import DataTable from "@/components/DataTable";
 
 const RoleList = () => {
@@ -49,7 +49,7 @@ const RoleList = () => {
         enableSorting: true,
         cell: ({ row }) => {
           return (
-            <RoleModel
+            <RoleModal
               retrieveRoleList={retrieveRoleList}
               roleId={row.original.roleId}
             />
@@ -106,7 +106,7 @@ const RoleList = () => {
       />
       <div className="flex w-full justify-end pt-4">
         <div className="items-end">
-          <RoleModel retrieveRoleList={retrieveRoleList} />
+          <RoleModal retrieveRoleList={retrieveRoleList} />
         </div>
       </div>
     </>
