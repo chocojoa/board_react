@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -22,21 +22,6 @@ const PostEdit = () => {
 
   const { categoryId, postId } = useParams();
   const user = useSelector((state) => state.auth.user);
-
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-
-  /**
-   * 네비게이션 조회
-   */
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
 
   const formSchema = postFormSchema();
 
@@ -109,14 +94,11 @@ const PostEdit = () => {
 
   useEffect(() => {
     retrievePost();
-    retrieveBreadcrumbs();
   }, []);
 
   return (
     <div className="my-4">
-      {breadcrumbs.length > 0 && (
-        <PageHeader title="자유게시판" itemList={breadcrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <PostForm form={form} />

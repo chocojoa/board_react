@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
@@ -22,21 +21,6 @@ const UserCreate = () => {
   const { toast } = useToast();
 
   const user = useSelector((state) => state.auth.user);
-
-  const [breadCrumbs, setBreadcrumbs] = useState([]);
-
-  /**
-   * 네비게이션 조회
-   */
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
 
   const formSchema = userFormSchema();
 
@@ -97,15 +81,9 @@ const UserCreate = () => {
     navigate(`/admin/users`);
   };
 
-  useEffect(() => {
-    retrieveBreadcrumbs();
-  }, []);
-
   return (
     <div className="py-4">
-      {breadCrumbs.length > 0 && (
-        <PageHeader title={pageTitle} itemList={breadCrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <div className="mt-2">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

@@ -22,21 +22,6 @@ const PostDetail = () => {
   const [comments, setComments] = useState([]);
   const location = useLocation();
 
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
-
-  /**
-   * 네비게이션 조회
-   */
-  const retrieveBreadcrumbs = () => {
-    const url = `/api/admin/menus/breadcrumbs?menuName=${pageTitle}`;
-    api({
-      url: encodeURI(url),
-      method: "GET",
-    }).then((response) => {
-      setBreadcrumbs(response.data.data);
-    });
-  };
-
   /**
    * 게시글 조회
    */
@@ -78,14 +63,11 @@ const PostDetail = () => {
   useEffect(() => {
     retrievePost();
     retrieveCommentList();
-    retrieveBreadcrumbs();
   }, []);
 
   return (
     <div className="my-4">
-      {breadcrumbs.length > 0 && (
-        <PageHeader title={pageTitle} itemList={breadcrumbs} />
-      )}
+      <PageHeader title={pageTitle} />
       <div>
         <div className="flex justify-between mx-1 pt-4 pb-2">
           <div>
