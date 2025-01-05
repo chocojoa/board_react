@@ -21,71 +21,62 @@ const BasicDataTable = forwardRef(({ columns, data }, ref) => {
   });
 
   useImperativeHandle(ref, () => ({
-    getTable() {
-      return table;
-    },
+    getTable: () => table,
   }));
 
+  const renderHeaderCell = (header) => (
+    <div className="flex items-center select-none cursor-pointer">
+      {header.isPlaceholder
+        ? null
+        : flexRender(header.column.columnDef.header, header.getContext())}
+    </div>
+  );
+
+  const renderTableRow = (row) => (
+    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+
+  const renderNoResults = () => (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="h-12 text-center">
+        검색 결과가 없습니다.
+      </TableCell>
+    </TableRow>
+  );
+
   return (
-    <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      style={{ width: `${header.getSize()}px` }}
-                    >
-                      <div className="flex items-center select-none cursor-pointer">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </div>
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  style={{ width: `${header.getSize()}px` }}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-12 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+                  {renderHeaderCell(header)}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length
+            ? table.getRowModel().rows.map(renderTableRow)
+            : renderNoResults()}
+        </TableBody>
+      </Table>
+    </div>
   );
 });
-BasicDataTable.displayName = "BasicDataChart";
+
+BasicDataTable.displayName = "BasicDataTable";
 
 export default BasicDataTable;

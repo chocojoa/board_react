@@ -10,43 +10,48 @@ import useAxios from "@/hooks/useAxios";
 
 const PageHeader = ({ title }) => {
   const api = useAxios();
-  const [items, setItems] = useState([]);
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  const retrieveBreadcrumbs = () => {
-    api({
-      url: encodeURI(`/api/admin/menus/breadcrumbs?menuName=${title}`),
-      method: "GET",
-    }).then((response) => {
-      setItems(response.data.data);
-    });
+  const fetchBreadcrumbs = async () => {
+    try {
+      const { data } = await api({
+        url: encodeURI(`/api/admin/menus/breadcrumbs?menuName=${title}`),
+        method: "GET",
+      });
+      setBreadcrumbs(data.data);
+    } catch (error) {
+      console.error("브레드크럼 조회 실패:", error);
+    }
   };
 
   useEffect(() => {
-    retrieveBreadcrumbs();
-  }, []);
+    fetchBreadcrumbs();
+  }, [title]);
+
+  const renderBreadcrumbItem = (item) => (
+    <Fragment key={item.menuId}>
+      <BreadcrumbSeparator />
+      <BreadcrumbItem>
+        <Link to={item.menuUrl}>{item.menuName}</Link>
+      </BreadcrumbItem>
+    </Fragment>
+  );
 
   return (
     <>
-      <div className="flex items-center text-center mb-2">
+      <nav className="flex items-center text-center mb-2">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
               <Link to="/">처음</Link>
             </BreadcrumbItem>
-            {items.map((item) => (
-              <Fragment key={item.menuId}>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <Link to={item.menuUrl}>{item.menuName}</Link>
-                </BreadcrumbItem>
-              </Fragment>
-            ))}
+            {breadcrumbs.map(renderBreadcrumbItem)}
           </BreadcrumbList>
         </Breadcrumb>
-      </div>
-      <div className="py-1">
-        <p className="text-lg font-bold">{title}</p>
-      </div>
+      </nav>
+      <header className="py-1">
+        <h1 className="text-lg font-bold">{title}</h1>
+      </header>
     </>
   );
 };
