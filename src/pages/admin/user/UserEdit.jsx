@@ -15,18 +15,14 @@ import userFormSchema from "@/components/formSchema/UserFormSchema";
 
 const UserEdit = () => {
   const pageTitle = "사용자관리";
-
   const navigate = useNavigate();
   const api = useAxios();
   const { toast } = useToast();
-
   const { userId } = useParams();
   const user = useSelector((state) => state.auth.user);
 
-  const formSchema = userFormSchema();
-
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(userFormSchema()),
     defaultValues: {
       userName: "",
       email: "",
@@ -35,69 +31,42 @@ const UserEdit = () => {
     },
   });
 
-  /**
-   * 사용자 조회
-   */
-  const retrieveUser = () => {
-    api({
-      url: `/api/admin/users/${userId}`,
-      method: "GET",
-    }).then((response) => {
-      const post = response.data.data;
-      Object.keys(post).map((key) => {
-        form.setValue(key, post[key]);
+  const handleUserFetch = async () => {
+    try {
+      const { data } = await api.get(`/api/admin/users/${userId}`);
+      const userData = data.data;
+      Object.entries(userData).forEach(([key, value]) => {
+        form.setValue(key, value);
       });
-    });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "사용자 정보 조회 실패",
+        description: error.response?.data?.message || "오류가 발생했습니다",
+      });
+    }
   };
 
-  /**
-   * 사용자 정보 수정
-   * @param {*} data form data
-   */
-  const onSubmit = (data) => {
-    api({
-      url: `/api/admin/users/${userId}`,
-      method: "PUT",
-      data: {
-        userName: data.userName,
-        email: data.email,
-        password: data.password,
-        verifyPassword: data.verifyPassword,
+  const handleSubmit = async (formData) => {
+    try {
+      await api.put(`/api/admin/users/${userId}`, {
+        ...formData,
         modifiedBy: user.userId,
-      },
-    })
-      .then(() => {
-        toast({
-          title: "수정되었습니다.",
-        });
-        gotoDetail(userId);
-      })
-      .catch((data) => {
-        toast({
-          variant: "destructive",
-          title: "문제가 발생하였습니다.",
-          description: data.response.data.message,
-        });
       });
-  };
 
-  /**
-   * 상세화면으로 이동
-   * @param {*} userId 사용자 아이디
-   */
-  const gotoDetail = (userId) => {
-    navigate(`/admin/users/${userId}`);
-  };
-
-  /**
-   * 목록화면으로 이동
-   */
-  const gotoList = () => {
-    navigate(`/admin/users`);
+      toast({ title: "수정되었습니다." });
+      navigate(`/admin/users/${userId}`);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "문제가 발생하였습니다.",
+        description: error.response?.data?.message,
+      });
+    }
   };
 
   useEffect(() => {
-    retrieveUser();
+    handleUserFetch();
   }, []);
 
   return (
@@ -105,12 +74,15 @@ const UserEdit = () => {
       <PageHeader title={pageTitle} />
       <div className="mt-2">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             <UserForm form={form} />
             <div className="flex w-full justify-end mt-4">
               <div className="items-end space-x-2">
                 <Button type="submit">저장</Button>
-                <Button type="button" onClick={gotoList}>
+                <Button type="button" onClick={() => navigate("/admin/users")}>
                   목록
                 </Button>
               </div>

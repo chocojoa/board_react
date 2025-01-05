@@ -15,25 +15,34 @@ import DatePickerWithRange from "@/components/DataPickerWithRange";
 
 const UserList = () => {
   const pageTitle = "사용자관리";
-
   const navigate = useNavigate();
   const api = useAxios();
+  const location = useLocation();
+  const paramsRef = useRef();
+
+  const searchParams = location.state?.searchCondition;
 
   const [data, setData] = useState({
     totalCount: 0,
     dataList: [],
   });
 
-  const location = useLocation();
-  const paramsRef = useRef();
-  const searchParams = location.state ? location.state.searchCondition : null;
-
   const [searchCondition, setSearchCondition] = useState({
-    userName: searchParams ? searchParams.userName : "",
-    email: searchParams ? searchParams.email : "",
+    userName: searchParams?.userName ?? "",
+    email: searchParams?.email ?? "",
     startCreatedDate: "",
     endCreatedDate: "",
   });
+
+  const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination(
+    searchParams?.pageSize ?? 10,
+    searchParams?.pageIndex ?? 0
+  );
+
+  const { sorting, onSortingChange, field, order } = useSorting(
+    searchParams?.sortColumn ?? "rowNumber",
+    searchParams?.sortDirection ?? "DESC"
+  );
 
   const columns = useMemo(
     () => [
@@ -48,17 +57,14 @@ const UserList = () => {
         header: "이름",
         size: 100,
         enableSorting: true,
-        cell: ({ row }) => {
-          const userId = row.original.userId;
-          return (
-            <Link
-              to={`/admin/users/${userId}`}
-              state={{ searchCondition: paramsRef.current }}
-            >
-              {row.getValue("userName")}
-            </Link>
-          );
-        },
+        cell: ({ row }) => (
+          <Link
+            to={`/admin/users/${row.original.userId}`}
+            state={{ searchCondition: paramsRef.current }}
+          >
+            {row.getValue("userName")}
+          </Link>
+        ),
       },
       {
         accessorKey: "email",
@@ -76,24 +82,11 @@ const UserList = () => {
     []
   );
 
-  const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination(
-    searchParams ? searchParams.pageSize : 10,
-    searchParams ? searchParams.pageIndex : 0
-  );
-
-  const { sorting, onSortingChange, field, order } = useSorting(
-    searchParams ? searchParams.sortColumn : "rowNumber",
-    searchParams ? searchParams.sortDirection : "DESC"
-  );
-
-  /**
-   * 사용자 목록 조회
-   */
-  const retrieveUserList = () => {
-    const paramsObj = {
+  const getSearchParams = () => {
+    const params = {
       startIndex: pageIndex * pageSize,
-      pageIndex: pageIndex,
-      pageSize: pageSize,
+      pageIndex,
+      pageSize,
       sortColumn: field,
       sortDirection: order,
       userName: searchCondition.userName,
@@ -105,56 +98,48 @@ const UserList = () => {
         ? format(searchCondition.endCreatedDate, "yyyy-MM-dd")
         : "",
     };
-    const searchParams = new URLSearchParams(paramsObj);
-    paramsRef.current = paramsObj;
-    api({
+    return new URLSearchParams(params);
+  };
+
+  const retrieveUserList = async () => {
+    const searchParams = getSearchParams();
+    paramsRef.current = Object.fromEntries(searchParams);
+
+    const response = await api({
       url: `/api/admin/users?${searchParams.toString()}`,
       method: "GET",
-    }).then((response) => {
-      setData({
-        totalCount: response.data.data.totalCount,
-        dataList: response.data.data.dataList,
-      });
+    });
+
+    setData({
+      totalCount: response.data.data.totalCount,
+      dataList: response.data.data.dataList,
     });
   };
 
-  /**
-   * Input 변경 이벤트
-   * @param {*} e
-   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setSearchCondition((prevState) => ({
-      ...prevState,
+    setSearchCondition((prev) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
-  /**
-   * 날짜 변경 이벤트
-   * @param {*} param0
-   */
   const handleCreatedDate = ({ from, to }) => {
-    setSearchCondition((prevState) => {
-      return { ...prevState, startCreatedDate: from, endCreatedDate: to };
-    });
+    setSearchCondition((prev) => ({
+      ...prev,
+      startCreatedDate: from,
+      endCreatedDate: to,
+    }));
   };
 
-  /**
-   * 검색조건 - 엔터키 입력시 조회
-   * @param {*} e 이벤트
-   */
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       retrieveUserList();
     }
   };
 
-  /**
-   * 등록 화면으로 이동
-   */
   const gotoRegister = () => {
-    navigate(`/admin/users/create`);
+    navigate("/admin/users/create");
   };
 
   useEffect(() => {
@@ -204,11 +189,12 @@ const UserList = () => {
               setDate={handleCreatedDate}
             />
           </div>
-          <Button className="ml-4" onClick={() => retrieveUserList()}>
+          <Button className="ml-4" onClick={retrieveUserList}>
             검색
           </Button>
         </div>
       </div>
+
       <div className="py-6">
         <DataTable
           columns={columns}
@@ -220,6 +206,7 @@ const UserList = () => {
           onSortingChange={onSortingChange}
         />
       </div>
+
       <div className="flex w-full justify-end">
         <div className="items-end">
           <Button type="button" onClick={gotoRegister}>
