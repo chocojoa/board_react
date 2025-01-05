@@ -14,66 +14,45 @@ import postFormSchema from "@/components/formSchema/PostFormSchema";
 
 const PostCreate = () => {
   const pageTitle = "자유게시판";
-
   const navigate = useNavigate();
   const api = useAxios();
   const { toast } = useToast();
-
   const { categoryId } = useParams();
   const user = useSelector((state) => state.auth.user);
 
-  const formSchema = postFormSchema();
-
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(postFormSchema()),
     defaultValues: {
       title: "",
       content: "",
     },
   });
 
-  /**
-   * 게시글 저장
-   * @param {*} data form dataf
-   */
-  const onSubmit = (data) => {
-    api({
-      url: `/api/boards/${categoryId}/posts`,
-      method: "POST",
-      data: {
-        title: data.title,
-        content: data.content,
-        userId: user.userId,
-      },
-    })
-      .then((response) => {
-        toast({
-          title: "저장되었습니다.",
-        });
-        gotoDetail(response.data.data.postId);
-      })
-      .catch((data) => {
-        toast({
-          variant: "destructive",
-          title: "문제가 발생하였습니다.",
-          description: data.response.data.message,
-        });
-      });
-  };
-
-  /**
-   * 상세화면으로 이동
-   * @param {*} postId 게시글 아이디
-   */
-  const gotoDetail = (postId) => {
+  const gotoDetail = (postId) =>
     navigate(`/boards/${categoryId}/posts/${postId}`);
-  };
+  const gotoList = () => navigate(`/boards/${categoryId}/posts`);
 
-  /**
-   * 목록화면으로 이동
-   */
-  const gotoList = () => {
-    navigate(`/boards/${categoryId}/posts`);
+  const onSubmit = async (formData) => {
+    try {
+      const { data } = await api({
+        url: `/api/boards/${categoryId}/posts`,
+        method: "POST",
+        data: {
+          title: formData.title,
+          content: formData.content,
+          userId: user.userId,
+        },
+      });
+
+      toast({ title: "저장되었습니다." });
+      gotoDetail(data.data.postId);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "문제가 발생하였습니다.",
+        description: error.response?.data?.message,
+      });
+    }
   };
 
   return (

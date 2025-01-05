@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -17,54 +18,62 @@ const CommentCreate = ({
   handleCommentClose,
 }) => {
   const api = useAxios();
+  const { toast } = useToast();
   const user = useSelector((state) => state.auth.user);
 
-  const formSchema = commentFormSchema();
-
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(commentFormSchema()),
     defaultValues: {
       content: "",
     },
   });
 
-  const onSubmit = (data) => {
-    api({
-      url: `/api/boards/${categoryId}/posts/${postId}/comments`,
-      method: "POST",
-      data: {
-        categoryId: categoryId,
-        postId: postId,
-        parentCommentId: parentCommentId,
-        content: data.content,
-        userId: user.userId,
-      },
-    }).then(() => {
+  const onSubmit = async (formData) => {
+    try {
+      await api({
+        url: `/api/boards/${categoryId}/posts/${postId}/comments`,
+        method: "POST",
+        data: {
+          categoryId,
+          postId,
+          parentCommentId,
+          content: formData.content,
+          userId: user.userId,
+        },
+      });
+
       form.reset();
       retrieveCommentList();
+
       if (typeof handleCommentClose === "function") {
         handleCommentClose();
       }
-    });
+
+      toast({ title: "댓글이 등록되었습니다." });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "댓글 등록 중 오류가 발생했습니다.",
+        description: error.response?.data?.message,
+      });
+    }
   };
 
   return (
-    <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex items-center space-x-2 pt-4 pb-2">
-            <div className="w-11/12">
-              <CommentForm form={form} />
-            </div>
-            <div className="w-1/12 text-center">
-              <Button type="submit" size="sm">
-                저장
-              </Button>
-            </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="flex items-center space-x-2 pt-4 pb-2">
+          <div className="w-11/12">
+            <CommentForm form={form} />
           </div>
-        </form>
-      </Form>
-    </>
+          <div className="w-1/12 text-center">
+            <Button type="submit" size="sm">
+              저장
+            </Button>
+          </div>
+        </div>
+      </form>
+    </Form>
   );
 };
 

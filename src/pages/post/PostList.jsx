@@ -13,12 +13,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import DatePickerWithRange from "@/components/DataPickerWithRange";
 
+// 검색 조건 초기값 상수화
+const INITIAL_SEARCH_CONDITION = {
+  title: "",
+  author: "",
+  startCreatedDate: "",
+  endCreatedDate: "",
+};
+
+// 페이지네이션 초기값 상수화
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_INDEX = 0;
+
+// 정렬 초기값 상수화
+const DEFAULT_SORT_COLUMN = "rowNumber";
+const DEFAULT_SORT_DIRECTION = "DESC";
+
 const PostList = () => {
   const pageTitle = "자유게시판";
-
   const navigate = useNavigate();
   const api = useAxios();
-
   const { categoryId } = useParams();
   const [data, setData] = useState({
     totalCount: 0,
@@ -27,13 +41,12 @@ const PostList = () => {
 
   const location = useLocation();
   const paramsRef = useRef();
-  const searchParams = location.state ? location.state.searchCondition : null;
+  const searchParams = location.state?.searchCondition;
 
   const [searchCondition, setSearchCondition] = useState({
-    title: searchParams ? searchParams.title : "",
-    author: searchParams ? searchParams.author : "",
-    startCreatedDate: "",
-    endCreatedDate: "",
+    ...INITIAL_SEARCH_CONDITION,
+    title: searchParams?.title ?? "",
+    author: searchParams?.author ?? "",
   });
 
   const columns = useMemo(
@@ -49,18 +62,14 @@ const PostList = () => {
         header: "제목",
         size: 400,
         enableSorting: true,
-        cell: ({ row }) => {
-          const categoryId = row.original.categoryId;
-          const postId = row.original.postId;
-          return (
-            <Link
-              to={`/boards/${categoryId}/posts/${postId}`}
-              state={{ searchCondition: paramsRef.current }}
-            >
-              {row.getValue("title")}
-            </Link>
-          );
-        },
+        cell: ({ row }) => (
+          <Link
+            to={`/boards/${row.original.categoryId}/posts/${row.original.postId}`}
+            state={{ searchCondition: paramsRef.current }}
+          >
+            {row.getValue("title")}
+          </Link>
+        ),
       },
       {
         accessorKey: "viewCount",
@@ -85,73 +94,67 @@ const PostList = () => {
   );
 
   const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination(
-    searchParams ? searchParams.pageSize : 10,
-    searchParams ? searchParams.pageIndex : 0
+    searchParams?.pageSize ?? DEFAULT_PAGE_SIZE,
+    searchParams?.pageIndex ?? DEFAULT_PAGE_INDEX
   );
 
   const { sorting, onSortingChange, field, order } = useSorting(
-    searchParams ? searchParams.sortColumn : "rowNumber",
-    searchParams ? searchParams.sortDirection : "DESC"
+    searchParams?.sortColumn ?? DEFAULT_SORT_COLUMN,
+    searchParams?.sortDirection ?? DEFAULT_SORT_DIRECTION
   );
 
-  /**
-   * 게시글 조회
-   */
-  const retrievePostList = () => {
-    const paramsObj = {
-      startIndex: pageIndex * pageSize,
-      pageIndex: pageIndex,
-      pageSize: pageSize,
-      sortColumn: field,
-      sortDirection: order,
-      title: searchCondition.title,
-      author: searchCondition.author,
-      startCreatedDate: searchCondition.startCreatedDate
-        ? format(searchCondition.startCreatedDate, "yyyy-MM-dd")
-        : "",
-      endCreatedDate: searchCondition.endCreatedDate
-        ? format(searchCondition.endCreatedDate, "yyyy-MM-dd")
-        : "",
-    };
+  const getSearchParams = () => ({
+    startIndex: pageIndex * pageSize,
+    pageIndex,
+    pageSize,
+    sortColumn: field,
+    sortDirection: order,
+    title: searchCondition.title,
+    author: searchCondition.author,
+    startCreatedDate: searchCondition.startCreatedDate
+      ? format(searchCondition.startCreatedDate, "yyyy-MM-dd")
+      : "",
+    endCreatedDate: searchCondition.endCreatedDate
+      ? format(searchCondition.endCreatedDate, "yyyy-MM-dd")
+      : "",
+  });
+
+  const retrievePostList = async () => {
+    const paramsObj = getSearchParams();
     const searchParams = new URLSearchParams(paramsObj);
     paramsRef.current = paramsObj;
-    api({
-      url: `/api/boards/${categoryId}/posts?${searchParams.toString()}`,
-      method: "GET",
-    }).then((response) => {
+
+    try {
+      const response = await api({
+        url: `/api/boards/${categoryId}/posts?${searchParams.toString()}`,
+        method: "GET",
+      });
+
       setData({
         totalCount: response.data.data.totalCount,
         dataList: response.data.data.dataList,
       });
-    });
+    } catch (error) {
+      console.error("게시글 조회 실패:", error);
+    }
   };
 
-  /**
-   * 검색조건 - Input 이벤트
-   * @param {*} e
-   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setSearchCondition((prevState) => ({
-      ...prevState,
+    setSearchCondition((prev) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
-  /**
-   * 검색조건 - 날짜 이벤트
-   * @param {*} param0
-   */
   const handleCreatedDate = ({ from, to }) => {
-    setSearchCondition((prevState) => {
-      return { ...prevState, startCreatedDate: from, endCreatedDate: to };
-    });
+    setSearchCondition((prev) => ({
+      ...prev,
+      startCreatedDate: from,
+      endCreatedDate: to,
+    }));
   };
 
-  /**
-   * 검색조건 - 엔터키 이벤트
-   * @param {*} e
-   */
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       retrievePostList();
@@ -185,7 +188,7 @@ const PostList = () => {
             />
           </div>
           <div className="flex w-full items-center">
-            <Label htmlFor="title" className="w-40 text-center">
+            <Label htmlFor="author" className="w-40 text-center">
               작성자
             </Label>
             <Input
@@ -209,7 +212,7 @@ const PostList = () => {
               setDate={handleCreatedDate}
             />
           </div>
-          <Button className="ml-4" onClick={() => retrievePostList()}>
+          <Button className="ml-4" onClick={retrievePostList}>
             검색
           </Button>
         </div>
