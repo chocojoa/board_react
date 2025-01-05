@@ -8,9 +8,9 @@ import {
 import { Fragment, useEffect, useState } from "react";
 import useAxios from "@/hooks/useAxios";
 
-const PageHeader = ({ title }) => {
+const PageHeader = ({ title, breadcrumbs: propsBreadcrumbs }) => {
   const api = useAxios();
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [breadcrumbs, setBreadcrumbs] = useState(propsBreadcrumbs || []);
 
   const fetchBreadcrumbs = async () => {
     try {
@@ -25,8 +25,10 @@ const PageHeader = ({ title }) => {
   };
 
   useEffect(() => {
-    fetchBreadcrumbs();
-  }, [title]);
+    if (!propsBreadcrumbs && title) {
+      fetchBreadcrumbs();
+    }
+  }, [title, propsBreadcrumbs]);
 
   const renderBreadcrumbItem = (item) => (
     <Fragment key={item.menuId}>
