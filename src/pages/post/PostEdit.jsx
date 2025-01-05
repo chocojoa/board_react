@@ -15,81 +15,64 @@ import postFormSchema from "@/components/formSchema/PostFormSchema";
 
 const PostEdit = () => {
   const pageTitle = "자유게시판";
-
   const navigate = useNavigate();
   const api = useAxios();
   const { toast } = useToast();
-
   const { categoryId, postId } = useParams();
   const user = useSelector((state) => state.auth.user);
 
-  const formSchema = postFormSchema();
-
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(postFormSchema()),
     defaultValues: {
       title: "",
       content: "",
     },
   });
 
-  /**
-   * 게시글 조회
-   */
-  const retrievePost = () => {
-    api({
-      url: `/api/boards/${categoryId}/posts/${postId}`,
-      method: "GET",
-    }).then((response) => {
-      const post = response.data.data;
-      Object.keys(post).map((key) => {
-        form.setValue(key, post[key]);
-      });
-    });
-  };
-
-  /**
-   * 게시글 저장
-   * @param {*} data form data
-   */
-  const onSubmit = (data) => {
-    api({
-      url: `/api/boards/${categoryId}/posts/${postId}`,
-      method: "PUT",
-      data: {
-        title: data.title,
-        content: data.content,
-        userId: user.userId,
-      },
-    })
-      .then(() => {
-        toast({
-          title: "수정되었습니다.",
-        });
-        gotoDetail(postId);
-      })
-      .catch((data) => {
-        toast({
-          variant: "destructive",
-          title: "문제가 발생하였습니다.",
-          description: data.response.data.message,
-        });
-      });
-  };
-
-  /**
-   * 상세화면으로 이동
-   * @param {*} postId 게시글 아이디
-   */
-  const gotoDetail = (postId) => {
+  const gotoDetail = (postId) =>
     navigate(`/boards/${categoryId}/posts/${postId}`);
+  const gotoList = () => navigate(`/boards/${categoryId}/posts`);
+
+  const retrievePost = async () => {
+    try {
+      const { data } = await api({
+        url: `/api/boards/${categoryId}/posts/${postId}`,
+        method: "GET",
+      });
+
+      Object.keys(data.data).forEach((key) => {
+        form.setValue(key, data.data[key]);
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "게시글 조회 중 오류가 발생했습니다.",
+        description: error.response?.data?.message,
+      });
+    }
   };
 
-  /**
-   * 목록화면으로 이동
-   */
-  const gotoList = () => {
-    navigate(`/boards/${categoryId}/posts`);
+  const onSubmit = async (formData) => {
+    try {
+      await api({
+        url: `/api/boards/${categoryId}/posts/${postId}`,
+        method: "PUT",
+        data: {
+          title: formData.title,
+          content: formData.content,
+          userId: user.userId,
+        },
+      });
+
+      toast({ title: "수정되었습니다." });
+      gotoDetail(postId);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "문제가 발생하였습니다.",
+        description: error.response?.data?.message,
+      });
+    }
   };
 
   useEffect(() => {

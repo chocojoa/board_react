@@ -12,57 +12,49 @@ import CommentCreate from "./CommentCreate";
 
 const PostDetail = () => {
   const pageTitle = "자유게시판";
-
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const api = useAxios();
-
+  const location = useLocation();
   const { categoryId, postId } = useParams();
+
   const [post, setPost] = useState({});
   const [comments, setComments] = useState([]);
-  const location = useLocation();
 
-  /**
-   * 게시글 조회
-   */
-  const retrievePost = () => {
-    api({
-      url: `/api/boards/${categoryId}/posts/${postId}?userId=${user.userId}`,
-      method: "GET",
-    }).then((response) => {
-      setPost(response.data.data);
-    });
+  const retrievePost = async () => {
+    try {
+      const { data } = await api({
+        url: `/api/boards/${categoryId}/posts/${postId}?userId=${user.userId}`,
+        method: "GET",
+      });
+      setPost(data.data);
+    } catch (error) {
+      console.error("게시글 조회 실패:", error);
+    }
   };
 
-  /**
-   * 코멘트 조회
-   */
-  const retrieveCommentList = () => {
-    api({
-      url: `/api/boards/${categoryId}/posts/${postId}/comments`,
-      method: "GET",
-    }).then((response) => {
-      setComments(response.data.data);
-    });
+  const retrieveCommentList = async () => {
+    try {
+      const { data } = await api({
+        url: `/api/boards/${categoryId}/posts/${postId}/comments`,
+        method: "GET",
+      });
+      setComments(data.data);
+    } catch (error) {
+      console.error("댓글 조회 실패:", error);
+    }
   };
 
-  /**
-   * 수정화면으로 이동
-   */
-  const gotoEdit = () => {
+  const handleEdit = () =>
     navigate(`/boards/${categoryId}/posts/${postId}/edit`);
-  };
-
-  /**
-   * 목록화면으로 이동
-   */
-  const gotoList = () => {
+  const handleList = () =>
     navigate(`/boards/${categoryId}/posts`, { state: location.state });
-  };
 
   useEffect(() => {
-    retrievePost();
-    retrieveCommentList();
+    const fetchData = async () => {
+      await Promise.all([retrievePost(), retrieveCommentList()]);
+    };
+    fetchData();
   }, []);
 
   return (
@@ -85,10 +77,10 @@ const PostDetail = () => {
       </div>
       <div className="flex w-full justify-end mt-4">
         <div className="items-end space-x-2">
-          <Button type="button" onClick={gotoEdit}>
+          <Button type="button" onClick={handleEdit}>
             수정
           </Button>
-          <Button type="button" variant="outline" onClick={gotoList}>
+          <Button type="button" variant="outline" onClick={handleList}>
             목록
           </Button>
         </div>
