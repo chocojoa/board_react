@@ -4,14 +4,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Baby } from "lucide-react";
 
-import authSlice from "@/store/authSlice";
-import menuSlice from "@/store/menuSlice";
 import useAxios from "@/hooks/useAxios";
 import { useToast } from "@/hooks/use-toast";
 import signInFormSchema from "@/components/formSchema/SignInFormSchema";
 import { Form } from "@/components/ui/form";
 import SignInForm from "@/components/form/SignInForm";
 import { Button } from "@/components/ui/button";
+import { signIn } from "@/store/authSlice";
+import { setMenuList } from "@/store/menuSlice";
 
 const SignIn = () => {
   const dispatch = useDispatch();
@@ -27,28 +27,6 @@ const SignIn = () => {
     },
   });
 
-  const handleSignIn = async (response) => {
-    const { token, user } = response.data.data;
-    dispatch(authSlice.actions.signIn(response.data.data));
-    await retrieveUserMenuList(token.accessToken, user.userId);
-  };
-
-  const retrieveUserMenuList = async (accessToken, userId) => {
-    try {
-      const response = await api({
-        url: `/api/common/userMenu/${userId}`,
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      dispatch(menuSlice.actions.setUserMenu(response.data.data));
-      navigate("/");
-    } catch (error) {
-      showErrorToast(error);
-    }
-  };
-
   const showErrorToast = (error) => {
     toast({
       variant: "destructive",
@@ -57,14 +35,38 @@ const SignIn = () => {
     });
   };
 
-  const onSubmit = async (data) => {
+  const fetchUserMenuList = async (accessToken, userId) => {
+    const response = await api({
+      url: `/api/common/userMenu/${userId}`,
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data.data;
+  };
+
+  const handleAuthSuccess = async (authData) => {
+    const { token, user } = authData.data;
+    dispatch(signIn(authData.data));
+
+    try {
+      const menuList = await fetchUserMenuList(token.accessToken, user.userId);
+      dispatch(setMenuList(menuList));
+      navigate("/");
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  const onSubmit = async (formData) => {
     try {
       const response = await api({
         url: "/api/auth/signIn",
         method: "POST",
-        data,
+        data: formData,
       });
-      await handleSignIn(response);
+      await handleAuthSuccess(response);
     } catch (error) {
       showErrorToast(error);
     }
@@ -77,7 +79,7 @@ const SignIn = () => {
           <Baby size={40} />
         </div>
         <h2 className="mt-2 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Sign in to your account
+          로그인
         </h2>
       </div>
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
@@ -89,15 +91,15 @@ const SignIn = () => {
                 type="submit"
                 className="flex w-full justify-center rounded-sm font-semibold"
               >
-                Sign in
+                로그인
               </Button>
             </div>
           </form>
         </Form>
         <p className="mt-10 text-center text-sm">
-          Don&apos;t have account yet?{" "}
+          계정이 없으신가요?{" "}
           <Link to="/auth/signUp" className="font-semibold">
-            Sign up
+            회원가입
           </Link>
         </p>
       </div>
