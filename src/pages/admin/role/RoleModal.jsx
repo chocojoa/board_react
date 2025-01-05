@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
 import { toast } from "@/hooks/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-
 import RoleForm from "@/components/form/RoleForm";
 import roleFormSchema from "@/components/formSchema/RoleFormSchema";
 
@@ -21,18 +20,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const RoleModel = ({ retrieveRoleList, roleId = 0 }) => {
-  const user = useSelector((state) => {
-    return state.auth.user;
-  });
-
+const RoleModal = ({ retrieveRoleList, roleId = 0 }) => {
+  const user = useSelector((state) => state.auth.user);
   const api = useAxios();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const dialogTitle = roleId === 0 ? "권한 추가" : "권한 수정";
 
-  const formSchema = roleFormSchema();
+  const isCreate = roleId === 0;
+  const dialogTitle = isCreate ? "권한 추가" : "권한 수정";
+
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(roleFormSchema()),
     defaultValues: {
       roleId: "",
       roleName: "",
@@ -40,91 +37,60 @@ const RoleModel = ({ retrieveRoleList, roleId = 0 }) => {
     },
   });
 
-  /**
-   * form submit
-   * @param {*} data form data
-   */
-  const onSubmit = (data) => {
-    if (roleId === 0) {
-      createRole(data);
-    } else {
-      modifyRole(data);
+  const handleSubmit = async (data) => {
+    try {
+      const payload = { ...data, userId: user.userId };
+
+      if (isCreate) {
+        await api.post("/api/admin/roles", payload);
+        toast({ title: "저장되었습니다." });
+      } else {
+        await api.put(`/api/admin/roles/${roleId}`, payload);
+        toast({ title: "수정되었습니다." });
+      }
+
+      resetModal();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "오류가 발생했습니다.",
+        description: error.response?.data?.message,
+      });
     }
   };
 
-  /**
-   * 권한조회
-   */
-  const retrieveRole = () => {
-    api({
-      url: `/api/admin/roles/${roleId}`,
-      method: "GET",
-    }).then((response) => {
+  const handleRetrieve = async () => {
+    try {
+      const response = await api.get(`/api/admin/roles/${roleId}`);
       const role = response.data.data;
       form.reset({
         roleId: role.roleId,
         roleName: role.roleName,
         description: role.description,
       });
-    });
-  };
-
-  /**
-   * 권한생성
-   * @param {*} data form data
-   */
-  const createRole = (data) => {
-    data.userId = user.userId;
-    api({
-      url: `/api/admin/roles`,
-      method: "POST",
-      data: data,
-    }).then(() => {
+    } catch (error) {
       toast({
-        title: "저장되었습니다.",
+        variant: "destructive",
+        title: "조회 중 오류가 발생했습니다.",
+        description: error.response?.data?.message,
       });
-      resetModal();
-    });
+    }
   };
 
-  /**
-   * 권한수정
-   * @param {*} data form data
-   */
-  const modifyRole = (data) => {
-    data.userId = user.userId;
-    api({
-      url: `/api/admin/roles/${roleId}`,
-      method: "PUT",
-      data: data,
-    }).then(() => {
+  const handleRemove = async () => {
+    try {
+      await api.delete(`/api/admin/roles/${roleId}`);
+      toast({ title: "삭제되었습니다." });
+      resetModal();
+    } catch (error) {
       toast({
-        title: "수정되었습니다.",
+        variant: "destructive",
+        title: "삭제 중 오류가 발생했습니다.",
+        description: error.response?.data?.message,
       });
-      resetModal();
-    });
+    }
   };
 
-  /**
-   * 권한삭제
-   * @param {*} data form data
-   */
-  const removeRole = (data) => {
-    data.userId = user.userId;
-    api({
-      url: `/api/admin/roles/${roleId}`,
-      method: "DELETE",
-    }).then(() => {
-      toast({
-        title: "삭제되었습니다.",
-      });
-      resetModal();
-    });
-  };
-
-  /**
-   * 모달창 초기화
-   */
   const resetModal = () => {
     form.reset();
     setDialogOpen(false);
@@ -133,39 +99,48 @@ const RoleModel = ({ retrieveRoleList, roleId = 0 }) => {
 
   return (
     <>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen} tabIndex="9999">
-        {roleId === 0 && (
-          <DialogTrigger asChild>
-            <Button type="button" variant="outline" tabIndex="0">
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild>
+          {isCreate ? (
+            <Button type="button" variant="outline">
               등록
             </Button>
-          </DialogTrigger>
-        )}
-        {roleId > 0 && (
-          <DialogTrigger asChild>
+          ) : (
             <Button
               type="button"
               variant="outline"
-              tabIndex="0"
               size="xs"
               className="px-3 py-1"
-              onClick={retrieveRole}
+              onClick={handleRetrieve}
             >
               수정
             </Button>
-          </DialogTrigger>
-        )}
+          )}
+        </DialogTrigger>
+
         <DialogContent className="sm:max-w-[600px]">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
               <DialogHeader>
                 <DialogTitle>{dialogTitle}</DialogTitle>
-                <DialogDescription></DialogDescription>
+                <DialogDescription />
               </DialogHeader>
+
               <RoleForm form={form} />
+
               <DialogFooter>
-                {roleId > 0 && (
-                  <Button type="button" onClick={removeRole}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDialogOpen(false)}
+                >
+                  취소
+                </Button>
+                {!isCreate && (
+                  <Button type="button" onClick={handleRemove}>
                     삭제
                   </Button>
                 )}
@@ -179,4 +154,4 @@ const RoleModel = ({ retrieveRoleList, roleId = 0 }) => {
   );
 };
 
-export default RoleModel;
+export default RoleModal;

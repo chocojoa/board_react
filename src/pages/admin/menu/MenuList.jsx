@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import Tree from "rc-tree";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
 import { useToast } from "@/hooks/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-
 import menuFormSchema from "@/components/formSchema/MenuFormSchema";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,9 +26,7 @@ import "rc-tree/assets/index.css";
 
 const MenuList = () => {
   const pageTitle = "메뉴관리";
-
   const user = useSelector((state) => state.auth.user);
-
   const api = useAxios();
   const { toast } = useToast();
 
@@ -38,179 +35,115 @@ const MenuList = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const formSchema = menuFormSchema();
+  const defaultFormValues = {
+    menuId: "",
+    parentMenuId: "",
+    menuName: "",
+    menuUrl: "",
+    sortOrder: "",
+    icon: "",
+    usageStatus: true,
+  };
 
   const createForm = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      menuId: "",
-      parentMenuId: "",
-      menuName: "",
-      menuUrl: "",
-      sortOrder: "",
-      icon: "",
-      usageStatus: true,
-    },
+    defaultValues: defaultFormValues,
   });
 
   const modifyForm = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      menuId: "",
-      parentMenuId: "",
-      menuName: "",
-      menuUrl: "",
-      sortOrder: "",
-      icon: "",
-      usageStatus: true,
-    },
+    defaultValues: defaultFormValues,
   });
 
-  /**
-   * RCTree용 JSON 생성 (재귀함수)
-   * @param {*} menuId
-   * @param {*} menus
-   * @returns
-   */
-  const getRcTreeData = (menuId, menus) => {
-    let childArray = [];
-    menus.forEach((element) => {
-      if (element.parentMenuId === menuId) {
-        let treeObject = {
-          key: element.menuId,
-          title: element.menuName,
-          depth: element.depth,
-          sortOrder: element.sortOrder,
+  const buildTreeData = (menuId, menus) => {
+    return menus
+      .filter((menu) => menu.parentMenuId === menuId)
+      .map((menu) => {
+        const node = {
+          key: menu.menuId,
+          title: menu.menuName,
+          depth: menu.depth,
+          sortOrder: menu.sortOrder,
         };
-        if (element.childCount > 0) {
-          const childArray = getRcTreeData(element.menuId, menus);
-          if (childArray.length > 0) {
-            treeObject.children = childArray;
+
+        if (menu.childCount > 0) {
+          const children = buildTreeData(menu.menuId, menus);
+          if (children.length) {
+            node.children = children;
           }
         }
-        childArray.push(treeObject);
-      }
-    });
-    return childArray;
+
+        return node;
+      });
   };
 
-  /**
-   * 메뉴 조회
-   */
-  const retrieveMenus = () => {
-    api({
-      url: "/api/admin/menus",
-      method: "GET",
-    }).then((response) => {
+  const retrieveMenus = async () => {
+    try {
+      const response = await api.get("/api/admin/menus");
       const menus = response.data.data;
-      const rcTreeData = getRcTreeData(0, menus);
-      const rootData = [
+      const treeNodes = buildTreeData(0, menus);
+      setTreeData([
         {
           key: 0,
           title: "메뉴",
           menuId: 0,
-          children: rcTreeData,
+          children: treeNodes,
         },
-      ];
-      setTreeData(rootData);
-    });
+      ]);
+    } catch (error) {
+      showErrorToast(error);
+    }
   };
 
-  /**
-   * 메뉴 상세 조회
-   * @param {*} menuId 메뉴 아이디
-   */
-  const retrieveMenuById = (menuId) => {
-    api({
-      url: `/api/admin/menus/${menuId}`,
-      method: "GET",
-    }).then((response) => {
+  const retrieveMenuById = async (menuId) => {
+    try {
+      const response = await api.get(`/api/admin/menus/${menuId}`);
       const menu = response.data.data;
-      modifyForm.reset({
-        menuId: menu.menuId,
-        menuName: menu.menuName,
-        parentMenuId: menu.parentMenuId,
-        menuUrl: menu.menuUrl,
-        sortOrder: menu.sortOrder,
-        icon: menu.icon,
-        usageStatus: menu.usageStatus,
-      });
-    });
+      modifyForm.reset(menu);
+    } catch (error) {
+      showErrorToast(error);
+    }
   };
 
-  const createMenu = (data) => {
-    data.userId = user.userId;
-    api({
-      url: "/api/admin/menus",
-      method: "POST",
-      data: data,
-    })
-      .then(() => {
-        toast({
-          title: "저장되었습니다.",
-        });
-        setSelectedMenu("");
-        retrieveMenus();
-        setDialogOpen(false);
-        resetModifyForm();
-      })
-      .catch((data) => {
-        toast({
-          variant: "destructive",
-          title: "문제가 발생하였습니다.",
-          description: data.response.data.message,
-        });
-      });
+  const handleCreateMenu = async (data) => {
+    try {
+      await api.post("/api/admin/menus", { ...data, userId: user.userId });
+      showSuccessToast("저장되었습니다.");
+      handleMenuChange();
+    } catch (error) {
+      showErrorToast(error);
+    }
   };
 
-  const modifyMenu = (data) => {
-    data.userId = user.userId;
-    api({
-      url: `/api/admin/menus/${data.menuId}`,
-      method: "PUT",
-      data: data,
-    })
-      .then(() => {
-        toast({
-          title: "수정되었습니다.",
-        });
-      })
-      .catch((data) => {
-        toast({
-          variant: "destructive",
-          title: "문제가 발생하였습니다.",
-          description: data.response.data.message,
-        });
+  const handleModifyMenu = async (data) => {
+    try {
+      await api.put(`/api/admin/menus/${data.menuId}`, {
+        ...data,
+        userId: user.userId,
       });
+      showSuccessToast("수정되었습니다.");
+    } catch (error) {
+      showErrorToast(error);
+    }
   };
 
-  const removeMenu = () => {
-    api({
-      url: `/api/admin/menus/${selectedMenu}`,
-      method: "DELETE",
-    })
-      .then(() => {
-        toast({
-          title: "삭제되었습니다.",
-        });
-        setSelectedMenu("");
-        retrieveMenus();
-        resetModifyForm();
-      })
-      .catch((data) => {
-        toast({
-          variant: "destructive",
-          title: "문제가 발생하였습니다.",
-          description: data.response.data.message,
-        });
-      });
+  const handleRemoveMenu = async () => {
+    try {
+      await api.delete(`/api/admin/menus/${selectedMenu}`);
+      showSuccessToast("삭제되었습니다.");
+      handleMenuChange();
+    } catch (error) {
+      showErrorToast(error);
+    }
   };
 
-  /**
-   * RCTree - Select Event
-   * @param {*} selectedKeys 선택된 Node 키 목록
-   * @param {*} e 이벤트
-   */
-  const handleRcTree = (selectedKeys, e) => {
+  const handleMenuChange = () => {
+    setSelectedMenu("");
+    retrieveMenus();
+    resetModifyForm();
+  };
+
+  const handleTreeSelect = (selectedKeys, e) => {
     if (e.selected) {
       const menuId = selectedKeys[0];
       setSelectedMenu(menuId);
@@ -225,25 +158,27 @@ const MenuList = () => {
 
   const resetModifyForm = () => {
     modifyForm.reset({
-      menuId: 0,
+      ...defaultFormValues,
       parentMenuId: selectedMenu,
-      menuName: "",
-      menuUrl: "",
-      sortOrder: "",
-      icon: "",
-      usageStatus: true,
     });
   };
 
-  const setNewMenu = () => {
+  const initNewMenu = () => {
     createForm.reset({
-      menuId: 0,
+      ...defaultFormValues,
       parentMenuId: selectedMenu,
-      menuName: "",
-      menuUrl: "",
-      sortOrder: "",
-      icon: "",
-      usageStatus: true,
+    });
+  };
+
+  const showSuccessToast = (message) => {
+    toast({ title: message });
+  };
+
+  const showErrorToast = (error) => {
+    toast({
+      variant: "destructive",
+      title: "문제가 발생하였습니다.",
+      description: error.response?.data?.message,
     });
   };
 
@@ -259,73 +194,66 @@ const MenuList = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>메뉴 목록</CardTitle>
-              <div>
-                {selectedMenu !== "" && (
-                  <Dialog
-                    open={dialogOpen}
-                    onOpenChange={setDialogOpen}
-                    tabIndex="9999"
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        tabIndex="0"
-                        onClick={setNewMenu}
+              {selectedMenu && (
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" onClick={initNewMenu}>
+                      추가
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px]">
+                    <Form {...createForm}>
+                      <form
+                        onSubmit={createForm.handleSubmit(handleCreateMenu)}
+                        className="space-y-4"
                       >
-                        추가
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
-                      <Form {...createForm}>
-                        <form
-                          onSubmit={createForm.handleSubmit(createMenu)}
-                          className="space-y-4"
-                        >
-                          <DialogHeader>
-                            <DialogTitle>메뉴 추가</DialogTitle>
-                            <DialogDescription>
-                              선택한 메뉴의 하위메뉴로 생성됩니다.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <MenuForm form={createForm} />
-                          <DialogFooter>
-                            <Button type="submit">저장</Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
+                        <DialogHeader>
+                          <DialogTitle>메뉴 추가</DialogTitle>
+                          <DialogDescription>
+                            선택한 메뉴의 하위메뉴로 생성됩니다.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <MenuForm form={createForm} />
+                        <DialogFooter>
+                          <Button type="submit">저장</Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </CardHeader>
           <CardContent>
             {treeData.length > 0 && (
               <Tree
                 treeData={treeData}
-                onSelect={handleRcTree}
+                onSelect={handleTreeSelect}
                 defaultExpandAll={true}
               />
             )}
+            {treeData.length === 0 && (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-gray-500">메뉴가 없습니다.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
+
         <Card className="w-3/4">
           <Form {...modifyForm}>
-            <form onSubmit={modifyForm.handleSubmit(modifyMenu)}>
+            <form onSubmit={modifyForm.handleSubmit(handleModifyMenu)}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>메뉴 상세정보</CardTitle>
-                  <div className="space-x-2">
-                    {selectedMenu !== "" && (
-                      <>
-                        <Button type="submit">수정</Button>
-                        <Button type="button" onClick={removeMenu}>
-                          삭제
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                  {selectedMenu && (
+                    <div className="space-x-2">
+                      <Button type="submit">수정</Button>
+                      <Button type="button" onClick={handleRemoveMenu}>
+                        삭제
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">

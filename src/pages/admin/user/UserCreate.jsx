@@ -14,18 +14,13 @@ import UserForm from "@/components/form/UserForm";
 
 const UserCreate = () => {
   const pageTitle = "사용자관리";
-
   const navigate = useNavigate();
-
   const api = useAxios();
   const { toast } = useToast();
-
-  const user = useSelector((state) => state.auth.user);
-
-  const formSchema = userFormSchema();
+  const { userId: createdBy } = useSelector((state) => state.auth.user);
 
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(userFormSchema()),
     defaultValues: {
       userName: "",
       email: "",
@@ -34,51 +29,22 @@ const UserCreate = () => {
     },
   });
 
-  /**
-   * 사용자 저장
-   * @param {*} data form data
-   */
-  const onSubmit = (data) => {
-    api({
-      url: `/api/admin/users`,
-      method: "POST",
-      data: {
-        userName: data.userName,
-        email: data.email,
-        password: data.password,
-        verifyPassword: data.verifyPassword,
-        createdBy: user.userId,
-      },
-    })
-      .then((response) => {
-        const userId = response.data.data.userId;
-        toast({
-          title: "저장되었습니다.",
-        });
-        gotoDetail(userId);
-      })
-      .catch((data) => {
-        toast({
-          variant: "destructive",
-          title: "문제가 발생하였습니다.",
-          description: data.response.data.message,
-        });
+  const handleSubmit = async (formData) => {
+    try {
+      const { data } = await api.post("/api/admin/users", {
+        ...formData,
+        createdBy,
       });
-  };
 
-  /**
-   * 상세화면으로 이동
-   * @param {*} userId 사용자 아이디
-   */
-  const gotoDetail = (userId) => {
-    navigate(`/admin/users/${userId}`);
-  };
-
-  /**
-   * 목록화면으로 이동
-   */
-  const gotoList = () => {
-    navigate(`/admin/users`);
+      toast({ title: "저장되었습니다." });
+      navigate(`/admin/users/${data.data.userId}`);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "문제가 발생하였습니다.",
+        description: error.response?.data?.message,
+      });
+    }
   };
 
   return (
@@ -86,12 +52,15 @@ const UserCreate = () => {
       <PageHeader title={pageTitle} />
       <div className="mt-2">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             <UserForm form={form} />
             <div className="flex w-full justify-end mt-4">
               <div className="items-end space-x-2">
                 <Button type="submit">저장</Button>
-                <Button type="button" onClick={gotoList}>
+                <Button type="button" onClick={() => navigate("/admin/users")}>
                   목록
                 </Button>
               </div>
