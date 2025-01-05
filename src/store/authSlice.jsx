@@ -1,26 +1,35 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialAuthState = {
+// 초기 인증 상태 정의
+const initialState = {
   isAuthenticated: false,
-  user: "",
-  token: "",
+  user: null,
+  token: null,
 };
 
+// 인증 관련 슬라이스 생성
 const authSlice = createSlice({
-  name: "authentication",
-  initialState: initialAuthState,
+  name: "auth",
+  initialState,
   reducers: {
-    signIn(state, action) {
+    // 로그인 액션
+    signIn: (state, { payload }) => {
+      const { user, token } = payload;
       state.isAuthenticated = true;
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+      state.user = user;
+      state.token = token;
     },
-    signOut(state) {
+
+    // 로그아웃 액션
+    signOut: (state) => {
       state.isAuthenticated = false;
-      state.user = "";
-      state.token = "";
+      state.user = null;
+      state.token = null;
     },
   },
 });
 
-export default authSlice;
+// 액션 생성자 내보내기
+export const { signIn, signOut } = authSlice.actions;
+
+export default authSlice.reducer;

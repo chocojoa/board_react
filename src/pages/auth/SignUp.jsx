@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
 import { useToast } from "@/hooks/use-toast";
-
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import UserForm from "@/components/form/UserForm";
@@ -26,21 +25,33 @@ const SignUp = () => {
     },
   });
 
+  const showToast = (options) => {
+    toast({
+      ...options,
+    });
+  };
+
+  const handleSignUpSuccess = () => {
+    showToast({
+      title: "계정이 생성되었습니다.",
+    });
+    navigate("/auth/signIn");
+  };
+
+  const handleSignUpError = (error) => {
+    showToast({
+      variant: "destructive",
+      title: "문제가 발생하였습니다.",
+      description: error.response?.data?.message,
+    });
+  };
+
   const handleSignUp = async (formData) => {
     try {
       await api.post("/api/auth/signUp", formData);
-
-      toast({
-        title: "계정이 생성되었습니다.",
-      });
-
-      navigate("/auth/signIn");
+      handleSignUpSuccess();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "문제가 발생하였습니다.",
-        description: error.response?.data?.message,
-      });
+      handleSignUpError(error);
     }
   };
 
@@ -51,7 +62,7 @@ const SignUp = () => {
           <Baby size={40} />
         </div>
         <h2 className="mt-2 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Create new account
+          회원가입
         </h2>
       </div>
 
@@ -66,15 +77,15 @@ const SignUp = () => {
               type="submit"
               className="flex w-full justify-center rounded-sm font-semibold"
             >
-              Create new account
+              가입하기
             </Button>
           </form>
         </Form>
 
         <p className="mt-10 text-center text-sm">
-          Already have account?{" "}
+          이미 계정이 있으신가요?{" "}
           <Link to="/auth/signIn" className="font-semibold">
-            Sign in
+            로그인
           </Link>
         </p>
       </div>
