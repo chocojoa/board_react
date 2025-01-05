@@ -10,6 +10,12 @@ import DataTable from "@/components/DataTable";
 const RoleList = () => {
   const api = useAxios();
   const [data, setData] = useState({ totalCount: 0, dataList: [] });
+  const { pageIndex, pageSize, onPaginationChange, pagination } =
+    usePagination();
+  const { sorting, onSortingChange, field, order } = useSorting(
+    "rowNumber",
+    "DESC"
+  );
 
   const columns = useMemo(
     () => [
@@ -47,46 +53,34 @@ const RoleList = () => {
         header: "수정/삭제",
         size: 100,
         enableSorting: true,
-        cell: ({ row }) => {
-          return (
-            <RoleModal
-              retrieveRoleList={retrieveRoleList}
-              roleId={row.original.roleId}
-            />
-          );
-        },
+        cell: ({ row }) => (
+          <RoleModal
+            retrieveRoleList={retrieveRoleList}
+            roleId={row.original.roleId}
+          />
+        ),
       },
     ],
     []
   );
 
-  const { pageIndex, pageSize, onPaginationChange, pagination } =
-    usePagination();
-  const { sorting, onSortingChange, field, order } = useSorting(
-    "rowNumber",
-    "DESC"
-  );
+  const retrieveRoleList = async () => {
+    try {
+      const params = {
+        startIndex: pageIndex * pageSize,
+        pageIndex,
+        pageSize,
+        sortColumn: field,
+        sortDirection: order,
+      };
+      const searchParams = new URLSearchParams(params);
+      const response = await api.get(`/api/admin/roles?${searchParams}`);
+      const { totalCount, dataList } = response.data.data;
 
-  const retrieveRoleList = () => {
-    const paramsObj = {
-      startIndex: pageIndex * pageSize,
-      pageIndex: pageIndex,
-      pageSize: pageSize,
-      sortColumn: field,
-      sortDirection: order,
-    };
-    const searchParams = new URLSearchParams(paramsObj);
-
-    api({
-      url: `/api/admin/roles?${searchParams}`,
-      method: "GET",
-    }).then((response) => {
-      const roleInfo = response.data.data;
-      setData({
-        totalCount: roleInfo.totalCount,
-        dataList: roleInfo.dataList,
-      });
-    });
+      setData({ totalCount, dataList });
+    } catch (error) {
+      console.error("권한 목록 조회 중 오류 발생:", error);
+    }
   };
 
   useEffect(() => {
@@ -105,9 +99,7 @@ const RoleList = () => {
         onSortingChange={onSortingChange}
       />
       <div className="flex w-full justify-end pt-4">
-        <div className="items-end">
-          <RoleModal retrieveRoleList={retrieveRoleList} />
-        </div>
+        <RoleModal retrieveRoleList={retrieveRoleList} />
       </div>
     </>
   );

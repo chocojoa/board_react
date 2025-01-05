@@ -4,6 +4,12 @@ import RoleList from "./RoleList";
 import UserRole from "./UserRole";
 import MenuRole from "./MenuRole";
 
+const TAB_ITEMS = [
+  { value: "role", label: "권한관리", component: RoleList },
+  { value: "menuByRole", label: "권한별 메뉴관리", component: MenuRole },
+  { value: "menuByUser", label: "권한별 사용자관리", component: UserRole },
+];
+
 const Role = () => {
   const pageTitle = "권한관리";
 
@@ -12,19 +18,17 @@ const Role = () => {
       <PageHeader title={pageTitle} />
       <Tabs defaultValue="role">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="role">권한관리</TabsTrigger>
-          <TabsTrigger value="menuByRole">권한별 메뉴관리</TabsTrigger>
-          <TabsTrigger value="menuByUser">권한별 사용자관리</TabsTrigger>
+          {TAB_ITEMS.map(({ value, label }) => (
+            <TabsTrigger key={value} value={value}>
+              {label}
+            </TabsTrigger>
+          ))}
         </TabsList>
-        <TabsContent value="role" className="pt-4">
-          <RoleList />
-        </TabsContent>
-        <TabsContent value="menuByRole" className="pt-4">
-          <MenuRole />
-        </TabsContent>
-        <TabsContent value="menuByUser" className="pt-4">
-          <UserRole />
-        </TabsContent>
+        {TAB_ITEMS.map(({ value, component: Component }) => (
+          <TabsContent key={value} value={value} className="pt-4">
+            <Component />
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
