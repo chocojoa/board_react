@@ -47,8 +47,8 @@ const SignIn = () => {
   };
 
   const handleAuthSuccess = async (authData) => {
-    const { token, user } = authData.data;
-    dispatch(signIn(authData.data));
+    const { token, user } = authData.data.data;
+    dispatch(signIn(authData.data.data));
 
     try {
       const menuList = await fetchUserMenuList(token.accessToken, user.userId);
