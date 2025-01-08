@@ -194,7 +194,7 @@ const MenuList = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>메뉴 목록</CardTitle>
-              {selectedMenu && (
+              {selectedMenu > 0 && (
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" onClick={initNewMenu}>

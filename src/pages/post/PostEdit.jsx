@@ -29,9 +29,7 @@ const PostEdit = () => {
     },
   });
 
-  const gotoDetail = (postId) =>
-    navigate(`/boards/${categoryId}/posts/${postId}`);
-  const gotoList = () => navigate(`/boards/${categoryId}/posts`);
+  const gotoDetail = () => navigate(`/boards/${categoryId}/posts/${postId}`);
 
   const retrievePost = async () => {
     try {
@@ -65,7 +63,7 @@ const PostEdit = () => {
       });
 
       toast({ title: "수정되었습니다." });
-      gotoDetail(postId);
+      gotoDetail();
     } catch (error) {
       toast({
         variant: "destructive",
@@ -88,8 +86,8 @@ const PostEdit = () => {
           <div className="flex w-full justify-end mt-4">
             <div className="items-end space-x-2">
               <Button type="submit">저장</Button>
-              <Button type="button" variant="outline" onClick={gotoList}>
-                목록
+              <Button type="button" variant="outline" onClick={gotoDetail}>
+                취소
               </Button>
             </div>
           </div>

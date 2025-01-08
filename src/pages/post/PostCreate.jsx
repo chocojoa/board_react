@@ -65,7 +65,7 @@ const PostCreate = () => {
             <div className="items-end space-x-2">
               <Button type="submit">저장</Button>
               <Button type="button" variant="outline" onClick={gotoList}>
-                목록
+                취소
               </Button>
             </div>
           </div>
