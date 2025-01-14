@@ -31,20 +31,19 @@ const MenuList = () => {
   const { toast } = useToast();
 
   const [treeData, setTreeData] = useState([]);
-  const [selectedMenu, setSelectedMenu] = useState("");
+  const [selectedMenu, setSelectedMenu] = useState(-1);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const formSchema = menuFormSchema();
   const defaultFormValues = {
-    menuId: "",
-    parentMenuId: "",
+    menuId: 0,
+    parentMenuId: 0,
     menuName: "",
     menuUrl: "",
     sortOrder: "",
     icon: "",
     usageStatus: true,
   };
-
   const createForm = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
@@ -110,6 +109,7 @@ const MenuList = () => {
       await api.post("/api/admin/menus", { ...data, userId: user.userId });
       showSuccessToast("저장되었습니다.");
       handleMenuChange();
+      setDialogOpen(false);
     } catch (error) {
       showErrorToast(error);
     }
@@ -122,6 +122,7 @@ const MenuList = () => {
         userId: user.userId,
       });
       showSuccessToast("수정되었습니다.");
+      handleMenuChange();
     } catch (error) {
       showErrorToast(error);
     }
@@ -138,7 +139,7 @@ const MenuList = () => {
   };
 
   const handleMenuChange = () => {
-    setSelectedMenu("");
+    setSelectedMenu(-1);
     retrieveMenus();
     resetModifyForm();
   };
@@ -151,22 +152,32 @@ const MenuList = () => {
         retrieveMenuById(menuId);
       }
     } else {
-      setSelectedMenu("");
+      setSelectedMenu(-1);
       resetModifyForm();
     }
   };
 
   const resetModifyForm = () => {
     modifyForm.reset({
-      ...defaultFormValues,
+      menuId: 0,
       parentMenuId: selectedMenu,
+      menuName: "",
+      menuUrl: "",
+      sortOrder: "",
+      icon: "",
+      usageStatus: true,
     });
   };
 
   const initNewMenu = () => {
     createForm.reset({
-      ...defaultFormValues,
+      menuId: 0,
       parentMenuId: selectedMenu,
+      menuName: "",
+      menuUrl: "",
+      sortOrder: "",
+      icon: "",
+      usageStatus: true,
     });
   };
 
@@ -194,7 +205,7 @@ const MenuList = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>메뉴 목록</CardTitle>
-              {selectedMenu > 0 && (
+              {selectedMenu > -1 && (
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" onClick={initNewMenu}>
