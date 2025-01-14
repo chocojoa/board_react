@@ -1,5 +1,5 @@
 import store from "@/store";
-import authSlice from "@/store/authSlice";
+import { signIn, signOut } from "@/store/authSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./use-toast";
@@ -22,7 +22,7 @@ const useAxios = () => {
       const { data } = await axios.post("/api/auth/reissue", {
         refreshToken: token.refreshToken,
       });
-      store.dispatch(authSlice.actions.signIn(data.data));
+      store.dispatch(signIn(data.data));
       return data.data.token.accessToken;
     } catch (err) {
       console.log(err);
@@ -30,7 +30,7 @@ const useAxios = () => {
         variant: "destructive",
         title: "사용시간이 만료되어 로그아웃 되었습니다.",
       });
-      store.dispatch(authSlice.actions.signOut());
+      store.dispatch(signOut());
       navigate("/");
       return null;
     }
