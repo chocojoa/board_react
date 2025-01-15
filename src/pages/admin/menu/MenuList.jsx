@@ -63,6 +63,8 @@ const MenuList = () => {
           title: menu.menuName,
           depth: menu.depth,
           sortOrder: menu.sortOrder,
+          menuId: menu.menuId,
+          parentMenuId: menu.parentMenuId,
         };
 
         if (menu.childCount > 0) {
@@ -86,6 +88,7 @@ const MenuList = () => {
           key: 0,
           title: "메뉴",
           menuId: 0,
+          parentMenuId: 0,
           children: treeNodes,
         },
       ]);
@@ -193,6 +196,73 @@ const MenuList = () => {
     });
   };
 
+  // menuId를 기준으로 객체를 삭제하는 함수
+  const deleteMenuById = (array, menuId) => {
+    return array.filter((item) => {
+      if (item.children && item.children.length > 0) {
+        item.children = deleteMenuById(item.children, menuId);
+      }
+      return item.menuId !== menuId;
+    });
+  };
+
+  // 특정 위치에 메뉴를 삽입하는 함수
+  const insertMenuById = (array, parentId, newMenu) => {
+    return array.map((item) => {
+      if (item.menuId === parentId) {
+        // 부모를 찾았으면 children에 삽입
+        return {
+          ...item,
+          children: [...item.children, newMenu],
+        };
+      }
+
+      // 재귀적으로 children에서 부모를 찾음
+      if (item.children && item.children.length > 0) {
+        return {
+          ...item,
+          children: insertMenuById(item.children, parentId, newMenu),
+        };
+      }
+
+      return item;
+    });
+  };
+
+  const handleTreeDrop = (event) => {
+    const menuId = event.dragNode.menuId;
+
+    const moveMenu = {
+      key: event.dragNode.key,
+      title: event.dragNode.title,
+      depth: event.dragNode.depth,
+      sortOrder: event.node.sortOrder + 1,
+      menuId: event.dragNode.menuId,
+      parentMenuId: event.node.parentMenuId,
+    };
+
+    const newParentMenuId = event.node.parentMenuId;
+    const dropMenuWithoutArray = deleteMenuById(treeData, menuId);
+    const newTreeData = insertMenuById(
+      dropMenuWithoutArray,
+      newParentMenuId,
+      moveMenu
+    );
+    modifyMenu(moveMenu);
+    setTreeData(newTreeData);
+  };
+
+  const modifyMenu = async (data) => {
+    try {
+      await api.put(`/api/admin/menus/${data.menuId}`, {
+        ...data,
+        userId: user.userId,
+      });
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
   useEffect(() => {
     retrieveMenus();
   }, []);
@@ -241,6 +311,8 @@ const MenuList = () => {
                 treeData={treeData}
                 onSelect={handleTreeSelect}
                 defaultExpandAll={true}
+                draggable
+                onDrop={handleTreeDrop}
               />
             )}
             {treeData.length === 0 && (
