@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 
 import CommentList from "./CommentList";
 import CommentCreate from "./CommentCreate";
+import { toast } from "sonner";
 
 const PostDetail = () => {
   const pageTitle = "자유게시판";
@@ -29,7 +30,9 @@ const PostDetail = () => {
       });
       setPost(data.data);
     } catch (error) {
-      console.error("게시글 조회 실패:", error);
+      toast.error("게시글 조회 중 오류가 발생했습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
@@ -41,7 +44,9 @@ const PostDetail = () => {
       });
       setComments(data.data);
     } catch (error) {
-      console.error("댓글 조회 실패:", error);
+      toast.error("댓글 조회 중 오류가 발생했습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 

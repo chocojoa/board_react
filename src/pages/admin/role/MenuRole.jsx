@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import useAxios from "@/hooks/useAxios";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ import "rc-tree/assets/index.css";
 const MenuRole = () => {
   const user = useSelector((state) => state.auth.user);
   const api = useAxios();
-  const { toast } = useToast();
   const treeRef = useRef();
 
   const [roleId, setRoleId] = useState(0);
@@ -121,13 +120,11 @@ const MenuRole = () => {
   };
 
   const showSuccessToast = (message) => {
-    toast({ title: message });
+    toast.success(message);
   };
 
   const showErrorToast = (error) => {
-    toast({
-      variant: "destructive",
-      title: "문제가 발생하였습니다.",
+    toast.error("문제가 발생하였습니다.", {
       description: error.response?.data?.message,
     });
   };

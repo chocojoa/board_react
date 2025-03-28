@@ -17,6 +17,7 @@ const menuFormSchema = () => {
     }),
     icon: z.string(),
     usageStatus: z.boolean(),
+    isDisplayed: z.boolean(),
   });
 };
 

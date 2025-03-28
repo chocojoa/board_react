@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ const PostEdit = () => {
   const pageTitle = "자유게시판";
   const navigate = useNavigate();
   const api = useAxios();
-  const { toast } = useToast();
   const { categoryId, postId } = useParams();
   const user = useSelector((state) => state.auth.user);
 
@@ -42,9 +41,7 @@ const PostEdit = () => {
         form.setValue(key, data.data[key]);
       });
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "게시글 조회 중 오류가 발생했습니다.",
+      toast.error("게시글 조회 중 오류가 발생했습니다.", {
         description: error.response?.data?.message,
       });
     }
@@ -62,12 +59,10 @@ const PostEdit = () => {
         },
       });
 
-      toast({ title: "수정되었습니다." });
+      toast.success("수정되었습니다.");
       gotoDetail();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "문제가 발생하였습니다.",
+      toast.error("저장 도중 문제가 발생하였습니다.", {
         description: error.response?.data?.message,
       });
     }

@@ -17,6 +17,7 @@ import {
   MenubarTrigger,
 } from "../ui/menubar";
 import LucideIcon from "../LucideIcon";
+import { toast } from "sonner";
 
 const Nav = () => {
   const api = useAxios();
@@ -35,7 +36,9 @@ const Nav = () => {
       dispatch(signOut());
       navigate("/");
     } catch (error) {
-      console.error("로그아웃 실패:", error);
+      toast.error("로그아웃 도중 문제가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
@@ -47,8 +50,9 @@ const Nav = () => {
     return (
       <MenubarContent>
         {childMenus.map(
-          ({ menuId, menuUrl, icon, menuName, childCount }) =>
-            childCount === 0 && (
+          ({ menuId, menuUrl, icon, menuName, childCount, isDisplayed }) =>
+            childCount === 0 &&
+            isDisplayed && (
               <Link to={menuUrl} key={menuId}>
                 <MenubarItem>
                   {icon && (
@@ -70,6 +74,7 @@ const Nav = () => {
     menuUrl,
     icon,
     menuName,
+    isDisplayed,
   }) => {
     if (parentMenuId !== 0) return null;
 
@@ -86,14 +91,16 @@ const Nav = () => {
     }
 
     return (
-      <MenubarMenu key={menuId}>
-        <Link to={menuUrl}>
-          <MenubarTrigger>
-            {icon && <LucideIcon name={icon} size={20} className="mr-2" />}
-            {menuName}
-          </MenubarTrigger>
-        </Link>
-      </MenubarMenu>
+      isDisplayed && (
+        <MenubarMenu key={menuId}>
+          <Link to={menuUrl}>
+            <MenubarTrigger>
+              {icon && <LucideIcon name={icon} size={20} className="mr-2" />}
+              {menuName}
+            </MenubarTrigger>
+          </Link>
+        </MenubarMenu>
+      )
     );
   };
 

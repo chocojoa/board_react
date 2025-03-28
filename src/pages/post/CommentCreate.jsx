@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -18,7 +18,6 @@ const CommentCreate = ({
   handleCommentClose,
 }) => {
   const api = useAxios();
-  const { toast } = useToast();
   const user = useSelector((state) => state.auth.user);
 
   const form = useForm({
@@ -49,11 +48,9 @@ const CommentCreate = ({
         handleCommentClose();
       }
 
-      toast({ title: "댓글이 등록되었습니다." });
+      toast.success("댓글이 등록되었습니다.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "댓글 등록 중 오류가 발생했습니다.",
+      toast.error("댓글 등록 중 오류가 발생했습니다.", {
         description: error.response?.data?.message,
       });
     }

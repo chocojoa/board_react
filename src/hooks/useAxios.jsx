@@ -2,12 +2,11 @@ import store from "@/store";
 import { signIn, signOut } from "@/store/authSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "./use-toast";
+import { toast } from "sonner";
 
 const useAxios = () => {
   const token = store.getState().auth.token;
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const instance = axios.create({
     timeout: 5000,
@@ -100,11 +99,8 @@ const useAxios = () => {
       }
 
       // 기타 에러 처리
-      toast({
-        variant: "destructive",
-        title: "요청 실패",
-        description:
-          error.response?.data?.message || "알 수 없는 오류가 발생했습니다.",
+      toast.error("요청 실패", {
+        description: error.response?.data?.message,
       });
 
       return Promise.reject(error);

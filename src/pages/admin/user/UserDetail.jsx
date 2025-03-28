@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import useAxios from "@/hooks/useAxios";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 const UserDetail = () => {
   const pageTitle = "사용자관리";
   const navigate = useNavigate();
   const api = useAxios();
-  const { toast } = useToast();
   const { userId } = useParams();
   const location = useLocation();
 
@@ -22,10 +20,8 @@ const UserDetail = () => {
       const { data } = await api.get(`/api/admin/users/${userId}`);
       setUser(data.data);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "사용자 정보 조회 실패",
-        description: error.response?.data?.message || "오류가 발생했습니다",
+      toast.error("사용자 정보 조회 중 문제가 발생하였습니다.", {
+        description: error.response?.data?.message,
       });
     }
   };

@@ -4,7 +4,7 @@ import { Baby } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import UserForm from "@/components/form/UserForm";
@@ -13,35 +13,25 @@ import userFormSchema from "@/components/formSchema/UserFormSchema";
 const SignUp = () => {
   const navigate = useNavigate();
   const api = useAxios();
-  const { toast } = useToast();
 
   const form = useForm({
     resolver: zodResolver(userFormSchema()),
     defaultValues: {
       userName: "",
       email: "",
+      isPasswordChange: true,
       password: "",
       verifyPassword: "",
     },
   });
 
-  const showToast = (options) => {
-    toast({
-      ...options,
-    });
-  };
-
   const handleSignUpSuccess = () => {
-    showToast({
-      title: "계정이 생성되었습니다.",
-    });
+    toast.success("계정이 생성되었습니다.");
     navigate("/auth/signIn");
   };
 
   const handleSignUpError = (error) => {
-    showToast({
-      variant: "destructive",
-      title: "문제가 발생하였습니다.",
+    toast.error("계정 생성 도중 문제가 발생하였습니다.", {
       description: error.response?.data?.message,
     });
   };
@@ -72,7 +62,7 @@ const SignUp = () => {
             className="space-y-6"
             onSubmit={form.handleSubmit(handleSignUp)}
           >
-            <UserForm form={form} />
+            <UserForm form={form} isNew={true} />
             <Button
               type="submit"
               className="flex w-full justify-center rounded-sm font-semibold"

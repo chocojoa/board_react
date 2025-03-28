@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import useAxios from "@/hooks/useAxios";
 
 import UserForm from "@/components/form/UserForm";
@@ -15,7 +15,6 @@ import { Form } from "@/components/ui/form";
 const Profile = () => {
   const user = useSelector((state) => state.auth.user);
   const api = useAxios();
-  const { toast } = useToast();
 
   const form = useForm({
     resolver: zodResolver(userFormSchema()),
@@ -34,13 +33,9 @@ const Profile = () => {
         modifiedBy: user.userId,
       });
 
-      toast({
-        title: "수정되었습니다.",
-      });
+      toast.success("수정되었습니다.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "문제가 발생하였습니다.",
+      toast.error("저장 도중 문제가 발생하였습니다.", {
         description: error.response?.data?.message,
       });
     }
@@ -60,7 +55,7 @@ const Profile = () => {
             onSubmit={form.handleSubmit(handleUpdateProfile)}
             className="space-y-6"
           >
-            <UserForm form={form} />
+            <UserForm form={form} isNew={false} />
             <div className="flex w-full justify-end mt-4">
               <div className="items-end space-x-2">
                 <Button type="submit">저장</Button>

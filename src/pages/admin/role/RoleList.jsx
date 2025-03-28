@@ -6,6 +6,7 @@ import useSorting from "@/hooks/useSorting";
 
 import RoleModal from "./RoleModal";
 import DataTable from "@/components/DataTable";
+import { toast } from "sonner";
 
 const RoleList = () => {
   const api = useAxios();
@@ -79,7 +80,9 @@ const RoleList = () => {
 
       setData({ totalCount, dataList });
     } catch (error) {
-      console.error("권한 목록 조회 중 오류 발생:", error);
+      toast.error("권한 목록 조회 중 오류가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
