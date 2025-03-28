@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Baby } from "lucide-react";
 
 import useAxios from "@/hooks/useAxios";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import signInFormSchema from "@/components/formSchema/SignInFormSchema";
 import { Form } from "@/components/ui/form";
 import SignInForm from "@/components/form/SignInForm";
@@ -17,7 +17,6 @@ const SignIn = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const api = useAxios();
-  const { toast } = useToast();
 
   const form = useForm({
     resolver: zodResolver(signInFormSchema()),
@@ -28,16 +27,14 @@ const SignIn = () => {
   });
 
   const showErrorToast = (error) => {
-    toast({
-      variant: "destructive",
-      title: "문제가 발생하였습니다.",
+    toast.error("문제가 발생하였습니다.", {
       description: error.response?.data?.message,
     });
   };
 
   const fetchUserMenuList = async (accessToken, userId) => {
     const response = await api({
-      url: `/api/common/userMenu/${userId}`,
+      url: `/api/common/menus/${userId}`,
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,

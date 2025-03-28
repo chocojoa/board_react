@@ -7,7 +7,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { Switch } from "../ui/switch";
+import { Checkbox } from "../ui/checkbox";
 
 const MenuForm = ({ form }) => {
   return (
@@ -104,14 +104,29 @@ const MenuForm = ({ form }) => {
         name="usageStatus"
         render={({ field }) => (
           <FormItem className="space-x-4">
-            <FormLabel>사용여부</FormLabel>
             <FormControl>
-              <Switch
-                value={field.value}
+              <Checkbox
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />
             </FormControl>
+            <FormLabel>사용여부</FormLabel>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="isDisplayed"
+        render={({ field }) => (
+          <FormItem className="space-x-4">
+            <FormControl>
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+            <FormLabel>화면 표시여부</FormLabel>
             <FormMessage />
           </FormItem>
         )}

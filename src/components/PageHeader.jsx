@@ -15,7 +15,7 @@ const PageHeader = ({ title, breadcrumbs: propsBreadcrumbs }) => {
   const fetchBreadcrumbs = async () => {
     try {
       const { data } = await api({
-        url: encodeURI(`/api/admin/menus/breadcrumbs?menuName=${title}`),
+        url: encodeURI(`/api/common/menus/breadcrumbs?menuName=${title}`),
         method: "GET",
       });
       setBreadcrumbs(data.data);

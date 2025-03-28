@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ const UserCreate = () => {
   const pageTitle = "사용자관리";
   const navigate = useNavigate();
   const api = useAxios();
-  const { toast } = useToast();
   const { userId: createdBy } = useSelector((state) => state.auth.user);
 
   const form = useForm({
@@ -24,6 +23,7 @@ const UserCreate = () => {
     defaultValues: {
       userName: "",
       email: "",
+      isPasswordChange: true,
       password: "",
       verifyPassword: "",
     },
@@ -36,12 +36,10 @@ const UserCreate = () => {
         createdBy,
       });
 
-      toast({ title: "저장되었습니다." });
+      toast.success("저장되었습니다.");
       navigate(`/admin/users/${data.data.userId}`);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "문제가 발생하였습니다.",
+      toast.error("저장 도중 문제가 발생하였습니다.", {
         description: error.response?.data?.message,
       });
     }
@@ -56,7 +54,7 @@ const UserCreate = () => {
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            <UserForm form={form} />
+            <UserForm form={form} isNew={true} />
             <div className="flex w-full justify-end mt-4">
               <div className="items-end space-x-2">
                 <Button type="submit">저장</Button>

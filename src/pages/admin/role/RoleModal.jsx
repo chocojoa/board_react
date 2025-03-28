@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import RoleForm from "@/components/form/RoleForm";
 import roleFormSchema from "@/components/formSchema/RoleFormSchema";
 
@@ -43,17 +43,15 @@ const RoleModal = ({ retrieveRoleList, roleId = 0 }) => {
 
       if (isCreate) {
         await api.post("/api/admin/roles", payload);
-        toast({ title: "저장되었습니다." });
+        toast.success("저장되었습니다.");
       } else {
         await api.put(`/api/admin/roles/${roleId}`, payload);
-        toast({ title: "수정되었습니다." });
+        toast.success("수정되었습니다.");
       }
 
       resetModal();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "오류가 발생했습니다.",
+      toast.error("오류가 발생했습니다.", {
         description: error.response?.data?.message,
       });
     }
@@ -69,9 +67,7 @@ const RoleModal = ({ retrieveRoleList, roleId = 0 }) => {
         description: role.description,
       });
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "조회 중 오류가 발생했습니다.",
+      toast.error("조회 중 오류가 발생했습니다.", {
         description: error.response?.data?.message,
       });
     }
@@ -80,12 +76,10 @@ const RoleModal = ({ retrieveRoleList, roleId = 0 }) => {
   const handleRemove = async () => {
     try {
       await api.delete(`/api/admin/roles/${roleId}`);
-      toast({ title: "삭제되었습니다." });
+      toast.success("삭제되었습니다.");
       resetModal();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "삭제 중 오류가 발생했습니다.",
+      toast.error("삭제 중 오류가 발생했습니다.", {
         description: error.response?.data?.message,
       });
     }

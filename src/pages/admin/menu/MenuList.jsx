@@ -5,7 +5,7 @@ import Tree from "rc-tree";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import menuFormSchema from "@/components/formSchema/MenuFormSchema";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +28,6 @@ const MenuList = () => {
   const pageTitle = "메뉴관리";
   const user = useSelector((state) => state.auth.user);
   const api = useAxios();
-  const { toast } = useToast();
 
   const [treeData, setTreeData] = useState([]);
   const [selectedMenu, setSelectedMenu] = useState(-1);
@@ -43,6 +42,7 @@ const MenuList = () => {
     sortOrder: "",
     icon: "",
     usageStatus: true,
+    isDisplayed: true,
   };
   const createForm = useForm({
     resolver: zodResolver(formSchema),
@@ -169,6 +169,7 @@ const MenuList = () => {
       sortOrder: "",
       icon: "",
       usageStatus: true,
+      isDisplayed: true,
     });
   };
 
@@ -181,17 +182,16 @@ const MenuList = () => {
       sortOrder: "",
       icon: "",
       usageStatus: true,
+      isDisplayed: true,
     });
   };
 
   const showSuccessToast = (message) => {
-    toast({ title: message });
+    toast.success(message);
   };
 
   const showErrorToast = (error) => {
-    toast({
-      variant: "destructive",
-      title: "문제가 발생하였습니다.",
+    toast.error("문제가 발생하였습니다.", {
       description: error.response?.data?.message,
     });
   };
@@ -329,7 +329,7 @@ const MenuList = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>메뉴 상세정보</CardTitle>
-                  {selectedMenu && (
+                  {selectedMenu > 0 && (
                     <div className="space-x-2">
                       <Button type="submit">수정</Button>
                       <Button type="button" onClick={handleRemoveMenu}>

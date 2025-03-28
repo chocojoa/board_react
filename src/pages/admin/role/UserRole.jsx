@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import useAxios from "@/hooks/useAxios";
 import usePagination from "@/hooks/usePagination";
 import useSorting from "@/hooks/useSorting";
@@ -22,7 +22,6 @@ import {
 const UserRole = () => {
   const user = useSelector((state) => state.auth.user);
   const api = useAxios();
-  const { toast } = useToast();
 
   const [role, setRole] = useState({ totalCount: 0, dataList: [] });
   const [userInfo, setUserInfo] = useState({ totalCount: 0, dataList: [] });
@@ -88,7 +87,9 @@ const UserRole = () => {
       const { totalCount, dataList } = data.data;
       setRole({ totalCount, dataList });
     } catch (error) {
-      console.error("권한 목록 조회 실패:", error);
+      toast.error("권한 목록 조회 중 오류가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
@@ -97,7 +98,9 @@ const UserRole = () => {
       const { data } = await api.get(`/api/admin/userRole/${roleId}`);
       setUserRole(data.data);
     } catch (error) {
-      console.error("사용자 권한 목록 조회 실패:", error);
+      toast.error("사용자 권한 목록 조회 중 오류가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
@@ -115,7 +118,9 @@ const UserRole = () => {
       const { totalCount, dataList } = data.data;
       setUserInfo({ totalCount, dataList });
     } catch (error) {
-      console.error("사용자 목록 조회 실패:", error);
+      toast.error("사용자 목록 조회 중 오류가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
@@ -158,12 +163,14 @@ const UserRole = () => {
         createdBy: user.userId,
       });
 
-      toast({ title: "저장되었습니다." });
+      toast.success("저장되었습니다.");
       userTable.current.getTable().resetRowSelection();
       addUserTable.current.getTable().resetRowSelection();
       fetchUserRoleList(roleId);
     } catch (error) {
-      console.error("저장 실패:", error);
+      toast.error("저장 중 오류가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ const PostCreate = () => {
   const pageTitle = "자유게시판";
   const navigate = useNavigate();
   const api = useAxios();
-  const { toast } = useToast();
   const { categoryId } = useParams();
   const user = useSelector((state) => state.auth.user);
 
@@ -44,12 +43,10 @@ const PostCreate = () => {
         },
       });
 
-      toast({ title: "저장되었습니다." });
+      toast.success("저장되었습니다.");
       gotoDetail(data.data.postId);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "문제가 발생하였습니다.",
+      toast.error("저장 도중 문제가 발생하였습니다.", {
         description: error.response?.data?.message,
       });
     }
