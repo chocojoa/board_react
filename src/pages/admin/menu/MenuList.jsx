@@ -23,6 +23,17 @@ import { Form } from "@/components/ui/form";
 import MenuForm from "@/components/form/MenuForm";
 
 import "rc-tree/assets/index.css";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const MenuList = () => {
   const pageTitle = "메뉴관리";
@@ -332,9 +343,27 @@ const MenuList = () => {
                   {selectedMenu > 0 && (
                     <div className="space-x-2">
                       <Button type="submit">수정</Button>
-                      <Button type="button" onClick={handleRemoveMenu}>
-                        삭제
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive">삭제</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              삭제하시겠습니까?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              삭제 시 하위 메뉴까지 삭제됩니다.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>취소</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleRemoveMenu}>
+                              삭제
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   )}
                 </div>
