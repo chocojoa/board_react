@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -16,7 +16,7 @@ const UserCreate = () => {
   const pageTitle = "사용자관리";
   const navigate = useNavigate();
   const api = useAxios();
-  const { userId: createdBy } = useSelector((state) => state.auth.user);
+  const { userId: createdBy } = useAuthStore((state) => state.user) ?? {};
 
   const form = useForm({
     resolver: zodResolver(userFormSchema()),

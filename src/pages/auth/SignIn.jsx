@@ -1,5 +1,4 @@
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Baby } from "lucide-react";
@@ -10,11 +9,12 @@ import signInFormSchema from "@/components/formSchema/SignInFormSchema";
 import { Form } from "@/components/ui/form";
 import SignInForm from "@/components/form/SignInForm";
 import { Button } from "@/components/ui/button";
-import { signIn } from "@/store/authSlice";
-import { setMenuList } from "@/store/menuSlice";
+import useAuthStore from "@/store/useAuthStore";
+import useMenuStore from "@/store/useMenuStore";
 
 const SignIn = () => {
-  const dispatch = useDispatch();
+  const signIn = useAuthStore((state) => state.signIn);
+  const setMenuList = useMenuStore((state) => state.setMenuList);
   const navigate = useNavigate();
   const api = useAxios();
 
@@ -45,11 +45,11 @@ const SignIn = () => {
 
   const handleAuthSuccess = async (authData) => {
     const { token, user } = authData.data.data;
-    dispatch(signIn(authData.data.data));
+    signIn(authData.data.data);
 
     try {
       const menuList = await fetchUserMenuList(token.accessToken, user.userId);
-      dispatch(setMenuList(menuList));
+      setMenuList(menuList);
       navigate("/");
     } catch (error) {
       showErrorToast(error);

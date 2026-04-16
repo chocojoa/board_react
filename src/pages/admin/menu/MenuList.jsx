@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 import { useForm } from "react-hook-form";
 import Tree from "rc-tree";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +37,7 @@ import {
 
 const MenuList = () => {
   const pageTitle = "메뉴관리";
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const api = useAxios();
 
   const [treeData, setTreeData] = useState([]);

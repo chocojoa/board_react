@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 
 import { toast } from "sonner";
 import useAxios from "@/hooks/useAxios";
@@ -19,7 +19,7 @@ import Tree from "rc-tree";
 import "rc-tree/assets/index.css";
 
 const MenuRole = () => {
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const api = useAxios();
   const treeRef = useRef();
 

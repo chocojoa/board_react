@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -17,7 +17,7 @@ const PostCreate = () => {
   const navigate = useNavigate();
   const api = useAxios();
   const { categoryId } = useParams();
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
 
   const form = useForm({
     resolver: zodResolver(postFormSchema()),

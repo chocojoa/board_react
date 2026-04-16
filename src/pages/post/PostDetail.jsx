@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 
 import useAxios from "@/hooks/useAxios";
 
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 const PostDetail = () => {
   const pageTitle = "자유게시판";
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const api = useAxios();
   const location = useLocation();

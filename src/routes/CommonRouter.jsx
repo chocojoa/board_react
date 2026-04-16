@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // 레이아웃 컴포넌트
@@ -30,7 +30,7 @@ const MenuList = lazy(() => import("@/pages/admin/menu/MenuList"));
 const Role = lazy(() => import("@/pages/admin/role/Role"));
 
 const CommonRouter = () => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const publicRoutes = (
     <Route element={!isAuthenticated ? <PublicLayout /> : <Navigate to="/" />}>

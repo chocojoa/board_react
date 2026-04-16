@@ -1,6 +1,6 @@
-import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { signOut } from "@/store/authSlice";
+import useAuthStore from "@/store/useAuthStore";
+import useMenuStore from "@/store/useMenuStore";
 import useAxios from "@/hooks/useAxios";
 
 import {
@@ -21,10 +21,11 @@ import { toast } from "sonner";
 
 const Nav = () => {
   const api = useAxios();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, token } = useSelector((state) => state.auth);
-  const { menuList } = useSelector((state) => state.menu);
+  const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  const signOut = useAuthStore((state) => state.signOut);
+  const menuList = useMenuStore((state) => state.menuList);
 
   const handleSignOut = async () => {
     try {
@@ -33,7 +34,7 @@ const Nav = () => {
         method: "POST",
         data: { refreshToken: token.refreshToken },
       });
-      dispatch(signOut());
+      signOut();
       navigate("/");
     } catch (error) {
       toast.error("로그아웃 도중 문제가 발생하였습니다.", {

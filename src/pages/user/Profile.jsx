@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 
 const Profile = () => {
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const api = useAxios();
 
   const form = useForm({

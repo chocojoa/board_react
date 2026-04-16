@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 
 import { toast } from "sonner";
 import useAxios from "@/hooks/useAxios";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 
 const UserRole = () => {
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const api = useAxios();
 
   const [role, setRole] = useState({ totalCount: 0, dataList: [] });

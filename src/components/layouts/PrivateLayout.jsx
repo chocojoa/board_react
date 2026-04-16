@@ -1,12 +1,12 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Nav from "./Nav";
-import { useSelector } from "react-redux";
+import useMenuStore from "@/store/useMenuStore";
 import { getAllUrl } from "@/auth/allowUrl";
 import NotFound from "@/pages/common/NotFound";
 
 const PrivateLayout = () => {
-  const menu = useSelector((state) => state.menu);
-  const menuList = menu.menuList
+  const rawMenuList = useMenuStore((state) => state.menuList);
+  const menuList = rawMenuList
     .filter((m) => m.menuUrl !== "")
     .map((m) => m.menuUrl);
   const location = useLocation();

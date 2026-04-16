@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -18,7 +18,7 @@ const CommentCreate = ({
   handleCommentClose,
 }) => {
   const api = useAxios();
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
 
   const form = useForm({
     resolver: zodResolver(commentFormSchema()),

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import useAuthStore from "@/store/useAuthStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 
 const RoleModal = ({ retrieveRoleList, roleId = 0 }) => {
-  const user = useSelector((state) => state.auth.user);
+  const user = useAuthStore((state) => state.user);
   const api = useAxios();
   const [dialogOpen, setDialogOpen] = useState(false);
 
