@@ -57,8 +57,8 @@ src/
 
 ### 인증 및 권한 관리
 - 이메일/비밀번호 로그인, 회원가입
-- JWT 액세스 토큰 + 리프레시 토큰 방식
-- 토큰 만료 시 자동 갱신 후 원래 요청 재시도 (Axios 인터셉터)
+- JWT 기반 인증 (보안을 강화한 **HttpOnly Cookie** 방식 적용)
+- 토큰 만료 시 쿠키 기반 `/api/auth/reissue` 자동 갱신 후 원래 요청 재시도 (Axios 인터셉터)
 - 로그인 후 사용자별 접근 가능 메뉴 동적 로드
 - Zustand persist로 새로고침 후에도 로그인 상태 유지 (localStorage)
 
@@ -105,7 +105,7 @@ Zustand의 `persist` 미들웨어로 localStorage에 상태를 저장합니다.
 
 ```
 localStorage
-├── auth-storage   ← { isAuthenticated, user, token }
+├── auth-storage   ← { isAuthenticated, user }
 └── menu-storage   ← { menuList }
 ```
 
@@ -115,9 +115,11 @@ localStorage
 
 `useAxios()` 훅이 Axios 인스턴스를 생성하고 인터셉터를 설정합니다.
 
+`withCredentials: true` 옵션을 기본 적용하여 요청 시 쿠키가 자동으로 포함됩니다.
+
 ```
-요청 인터셉터: Authorization: Bearer {accessToken} 자동 부착
-응답 인터셉터: 401 + JWT_TOKEN_IS_EXPIRED → /api/auth/reissue 호출 → 원래 요청 재시도
+요청 인터셉터: 별도의 헤더 주입 없음 (브라우저가 알아서 쿠키 전송)
+응답 인터셉터: 401 + JWT_TOKEN_IS_EXPIRED → /api/auth/reissue 호출 (새 쿠키 발급) → 원래 요청 재시도
               그 외 에러 → Sonner toast 알림 출력
 ```
 
