@@ -23,7 +23,6 @@ const Nav = () => {
   const api = useAxios();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const token = useAuthStore((state) => state.token);
   const signOut = useAuthStore((state) => state.signOut);
   const menuList = useMenuStore((state) => state.menuList);
 
@@ -32,7 +31,6 @@ const Nav = () => {
       await api({
         url: "/api/auth/signOut",
         method: "POST",
-        data: { refreshToken: token.refreshToken },
       });
       signOut();
       navigate("/");

@@ -32,24 +32,21 @@ const SignIn = () => {
     });
   };
 
-  const fetchUserMenuList = async (accessToken, userId) => {
+  const fetchUserMenuList = async (userId) => {
     const response = await api({
       url: `/api/common/menus/${userId}`,
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
     });
     return response.data.data;
   };
 
   const handleAuthSuccess = async (authData) => {
-    const { token, user } = authData.data.data;
-    signIn(authData.data.data);
+    const { user } = authData.data.data;
 
     try {
-      const menuList = await fetchUserMenuList(token.accessToken, user.userId);
+      const menuList = await fetchUserMenuList(user.userId);
       setMenuList(menuList);
+      signIn(authData.data.data);
       navigate("/");
     } catch (error) {
       showErrorToast(error);

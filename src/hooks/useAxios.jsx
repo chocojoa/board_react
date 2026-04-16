@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const useAxios = () => {
-  const token = useAuthStore.getState().token;
   const navigate = useNavigate();
 
   const instance = axios.create({
     timeout: 5000,
+    withCredentials: true,
   });
 
   let isRefreshing = false;
@@ -17,11 +17,13 @@ const useAxios = () => {
   // 토큰 갱신 함수
   const refreshToken = async () => {
     try {
-      const { data } = await axios.post("/api/auth/reissue", {
-        refreshToken: token.refreshToken,
-      });
+      const { data } = await axios.post(
+        "/api/auth/reissue",
+        {},
+        { withCredentials: true }
+      );
       useAuthStore.getState().signIn(data.data);
-      return data.data.token.accessToken;
+      return true;
     } catch (err) {
       console.log(err);
       toast({
@@ -30,27 +32,19 @@ const useAxios = () => {
       });
       useAuthStore.getState().signOut();
       navigate("/");
-      return null;
+      return false;
     }
   };
 
   // 대기 중인 요청 처리 함수
-  const onTokenRefreshed = (accessToken) => {
-    refreshSubscribers.forEach((callback) => callback(accessToken));
+  const onTokenRefreshed = () => {
+    refreshSubscribers.forEach((callback) => callback());
     refreshSubscribers = [];
   };
 
   // 요청 인터셉터
   instance.interceptors.request.use(
-    (config) => {
-      if (token?.accessToken) {
-        config.headers = {
-          ...config.headers,
-          Authorization: `Bearer ${token.accessToken}`,
-        };
-      }
-      return config;
-    },
+    (config) => config,
     (error) => Promise.reject(error)
   );
 
@@ -71,17 +65,11 @@ const useAxios = () => {
         if (!isRefreshing) {
           isRefreshing = true;
 
-          const newAccessToken = await refreshToken();
-          if (newAccessToken) {
-            onTokenRefreshed(newAccessToken);
+          const refreshed = await refreshToken();
+          if (refreshed) {
+            onTokenRefreshed();
             isRefreshing = false;
-            return axios({
-              ...originalRequest,
-              headers: {
-                ...originalRequest.headers,
-                Authorization: `Bearer ${newAccessToken}`,
-              },
-            });
+            return instance(originalRequest);
           }
 
           isRefreshing = false;
@@ -90,9 +78,8 @@ const useAxios = () => {
 
         // 리프레시 중인 경우 대기
         return new Promise((resolve) => {
-          refreshSubscribers.push((accessToken) => {
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            resolve(axios(originalRequest));
+          refreshSubscribers.push(() => {
+            resolve(instance(originalRequest));
           });
         });
       }
