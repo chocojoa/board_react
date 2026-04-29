@@ -28,6 +28,7 @@ const UserRole = () => {
   const [userRole, setUserRole] = useState([]);
   const [roleId, setRoleId] = useState(0);
 
+  const roleUserIds = useRef(new Set());
   const userTable = useRef();
   const addUserTable = useRef();
 
@@ -93,17 +94,6 @@ const UserRole = () => {
     }
   };
 
-  const fetchUserRoleList = async (roleId) => {
-    try {
-      const { data } = await api.get(`/api/admin/userRole/${roleId}`);
-      setUserRole(data.data);
-    } catch (error) {
-      toast.error("사용자 권한 목록 조회 중 오류가 발생하였습니다.", {
-        description: error.response?.data?.message,
-      });
-    }
-  };
-
   const fetchUserList = async () => {
     try {
       const params = {
@@ -116,7 +106,10 @@ const UserRole = () => {
       const searchParams = new URLSearchParams(params);
       const { data } = await api.get(`/api/admin/users?${searchParams}`);
       const { totalCount, dataList } = data.data;
-      setUserInfo({ totalCount, dataList });
+      setUserInfo({
+        totalCount,
+        dataList: dataList.filter((u) => !roleUserIds.current.has(u.userId)),
+      });
     } catch (error) {
       toast.error("사용자 목록 조회 중 오류가 발생하였습니다.", {
         description: error.response?.data?.message,
@@ -124,8 +117,26 @@ const UserRole = () => {
     }
   };
 
+  const fetchUserRoleList = async (rid) => {
+    try {
+      const { data } = await api.get(`/api/admin/userRole/${rid}`);
+      const users = data.data;
+      setUserRole(users);
+      roleUserIds.current = new Set(users.map((u) => u.userId));
+      fetchUserList();
+    } catch (error) {
+      toast.error("사용자 권한 목록 조회 중 오류가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
+    }
+  };
+
   const handleRoleChange = (value) => {
     setRoleId(value);
+    setUserRole([]);
+    roleUserIds.current = new Set();
+    userTable.current?.getTable().resetRowSelection();
+    addUserTable.current?.getTable().resetRowSelection();
     fetchUserRoleList(value);
   };
 
@@ -136,37 +147,42 @@ const UserRole = () => {
       .rows.map((row) => row.original);
 
     const newUsers = selectedUsers.filter(
-      (user) =>
-        !userRole.some((existingUser) => existingUser.userId === user.userId)
+      (u) => !roleUserIds.current.has(u.userId)
     );
 
+    newUsers.forEach((u) => roleUserIds.current.add(u.userId));
     setUserRole((prev) => [...prev, ...newUsers]);
+    setUserInfo((prev) => ({
+      ...prev,
+      dataList: prev.dataList.filter((u) => !roleUserIds.current.has(u.userId)),
+    }));
+    table.resetRowSelection();
   };
 
   const handleRemoveUser = () => {
     const table = addUserTable.current.getTable();
-    const selectedUserIds = table
+    const toRemove = table
       .getSelectedRowModel()
-      .rows.map((row) => row.original.userId);
+      .rows.map((row) => row.original);
 
+    toRemove.forEach((u) => roleUserIds.current.delete(u.userId));
     setUserRole((prev) =>
-      prev.filter((user) => !selectedUserIds.includes(user.userId))
+      prev.filter((u) => !toRemove.some((r) => r.userId === u.userId))
     );
     table.resetRowSelection();
+    fetchUserList();
   };
 
   const handleSave = async () => {
     try {
       await api.post(`/api/admin/userRole/${roleId}`, {
         roleId,
-        addUserList: userRole.map((user) => user.userId),
+        addUserList: userRole.map((u) => u.userId),
         createdBy: user.userId,
       });
 
       toast.success("저장되었습니다.");
-      userTable.current.getTable().resetRowSelection();
-      addUserTable.current.getTable().resetRowSelection();
-      fetchUserRoleList(roleId);
+      await fetchUserRoleList(roleId);
     } catch (error) {
       toast.error("저장 중 오류가 발생하였습니다.", {
         description: error.response?.data?.message,
@@ -176,15 +192,18 @@ const UserRole = () => {
 
   useEffect(() => {
     fetchRoleList();
-    fetchUserList();
   }, []);
+
+  useEffect(() => {
+    fetchUserList();
+  }, [pageIndex, pageSize, field, order]);
 
   return (
     <div>
       <div className="flex mb-5">
         <Select onValueChange={handleRoleChange}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="권한" />
+            <SelectValue placeholder="권한을 선택해 주세요" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -198,8 +217,8 @@ const UserRole = () => {
         </Select>
       </div>
 
-      <div className="flex">
-        <div className="w-5/6">
+      <div className="flex gap-4">
+        <div className="w-5/12">
           <DataTable
             ref={userTable}
             columns={columns}
@@ -212,7 +231,7 @@ const UserRole = () => {
           />
         </div>
 
-        <div className="w-2/6 space-y-4 text-center content-center">
+        <div className="w-2/12 space-y-4 text-center content-center">
           <div>
             <Button
               variant="outline"
@@ -233,7 +252,7 @@ const UserRole = () => {
           </div>
         </div>
 
-        <div className="w-5/6">
+        <div className="w-5/12">
           <BasicDataTable
             ref={addUserTable}
             columns={columns}

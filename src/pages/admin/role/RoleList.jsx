@@ -11,49 +11,19 @@ import { toast } from "sonner";
 const RoleList = () => {
   const api = useAxios();
   const [data, setData] = useState({ totalCount: 0, dataList: [] });
-  const { pageIndex, pageSize, onPaginationChange, pagination } =
-    usePagination();
-  const { sorting, onSortingChange, field, order } = useSorting(
-    "rowNumber",
-    "DESC"
-  );
+  const { pageIndex, pageSize, onPaginationChange, pagination } = usePagination();
+  const { sorting, onSortingChange, field, order } = useSorting("rowNumber", "DESC");
 
   const columns = useMemo(
     () => [
+      { accessorKey: "rowNumber", header: "번호", size: 80, enableSorting: true },
+      { accessorKey: "roleName", header: "권한명", size: 150, enableSorting: true },
+      { accessorKey: "description", header: "설명", enableSorting: true },
+      { accessorKey: "createdAt", header: "등록일", size: 120, enableSorting: true },
       {
-        accessorKey: "rowNumber",
-        header: "번호",
-        size: 100,
-        enableSorting: true,
-      },
-      {
-        accessorKey: "roleName",
-        header: "권한명",
-        size: 150,
-        enableSorting: true,
-      },
-      {
-        accessorKey: "description",
-        header: "설명",
-        size: 350,
-        enableSorting: true,
-      },
-      {
-        accessorKey: "createdBy",
-        header: "등록자",
-        size: 100,
-        enableSorting: true,
-      },
-      {
-        accessorKey: "createdAt",
-        header: "등록일",
-        size: 100,
-        enableSorting: true,
-      },
-      {
-        header: "수정/삭제",
-        size: 100,
-        enableSorting: true,
+        header: "수정",
+        size: 80,
+        enableSorting: false,
         cell: ({ row }) => (
           <RoleModal
             retrieveRoleList={retrieveRoleList}
@@ -75,9 +45,8 @@ const RoleList = () => {
         sortDirection: order,
       };
       const searchParams = new URLSearchParams(params);
-      const response = await api.get(`/api/admin/roles?${searchParams}`);
-      const { totalCount, dataList } = response.data.data;
-
+      const { data } = await api.get(`/api/admin/roles?${searchParams}`);
+      const { totalCount, dataList } = data.data;
       setData({ totalCount, dataList });
     } catch (error) {
       toast.error("권한 목록 조회 중 오류가 발생하였습니다.", {

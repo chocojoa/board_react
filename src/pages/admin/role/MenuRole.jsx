@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import useAuthStore from "@/store/useAuthStore";
 
 import { toast } from "sonner";
@@ -15,118 +15,96 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import Tree from "rc-tree";
-import "rc-tree/assets/index.css";
+import MenuCheckTree from "./MenuCheckTree";
 
 const MenuRole = () => {
   const user = useAuthStore((state) => state.user);
   const api = useAxios();
-  const treeRef = useRef();
 
   const [roleId, setRoleId] = useState(0);
   const [roles, setRoles] = useState({ totalCount: 0, dataList: [] });
-  const [treeData, setTreeData] = useState(null);
-  const [checkedKeys, setCheckedKeys] = useState(null);
+  const [treeData, setTreeData] = useState([]);
+  const [checkedMenuIds, setCheckedMenuIds] = useState([]);
 
-  const buildTreeData = (menuId, menuList) => {
+  const buildTree = (parentId, menuList) => {
     return menuList
-      .filter((menu) => menu.parentMenuId === menuId)
-      .map((menu) => {
-        const node = {
-          key: menu.menuId,
-          title: menu.menuName,
-          depth: menu.depth,
-          sortOrder: menu.sortOrder,
-        };
-
-        if (menu.childCount > 0) {
-          const children = buildTreeData(menu.menuId, menuList);
-          if (children.length) {
-            node.children = children;
-          }
-        }
-
-        return node;
-      });
+      .filter((m) => m.parentMenuId === parentId)
+      .map((m) => ({ ...m, children: buildTree(m.menuId, menuList) }));
   };
 
-  const getCheckedKeys = (menuList) => {
-    const checked = [];
-    const halfChecked = [];
+  const getAllDescendantIds = (node) => {
+    const ids = [node.menuId];
+    if (node.children?.length) {
+      for (const child of node.children) {
+        ids.push(...getAllDescendantIds(child));
+      }
+    }
+    return ids;
+  };
 
-    menuList.forEach((menu) => {
-      if (menu.checked) checked.push(menu.menuId);
-      if (menu.halfChecked) halfChecked.push(menu.menuId);
-    });
-
-    return { checked, halfCheckedKeys: halfChecked };
+  const collectHalfCheckedIds = (nodes, checked) => {
+    const result = [];
+    for (const node of nodes) {
+      if (node.children?.length) {
+        const allIds = getAllDescendantIds(node);
+        const checkedCount = allIds.filter((id) => checked.includes(id)).length;
+        if (checkedCount > 0 && checkedCount < allIds.length) {
+          result.push(node.menuId);
+        }
+        result.push(...collectHalfCheckedIds(node.children, checked));
+      }
+    }
+    return result;
   };
 
   const retrieveRoles = async () => {
     try {
-      const response = await api.get("/api/admin/roles?sortColumn=roleName");
-      const { totalCount, dataList } = response.data.data;
+      const { data } = await api.get("/api/admin/roles?sortColumn=roleName");
+      const { totalCount, dataList } = data.data;
       setRoles({ totalCount, dataList });
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
   const retrieveMenuRoles = async (selectedRoleId) => {
     try {
-      const response = await api.get(`/api/admin/menuRole/${selectedRoleId}`);
-      const menuList = response.data.data;
+      const { data } = await api.get(`/api/admin/menuRole/${selectedRoleId}`);
+      const menuList = data.data;
 
-      setCheckedKeys(getCheckedKeys(menuList));
-
-      const treeNodes = buildTreeData(0, menuList);
-      setTreeData([
-        {
-          key: 0,
-          title: "메뉴",
-          menuId: 0,
-          checkable: false,
-          children: treeNodes,
-        },
-      ]);
+      const checked = menuList.filter((m) => m.checked).map((m) => m.menuId);
+      setCheckedMenuIds(checked);
+      setTreeData(buildTree(0, menuList));
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
   };
 
   const handleRoleChange = (value) => {
     setRoleId(value);
+    setTreeData([]);
+    setCheckedMenuIds([]);
     retrieveMenuRoles(value);
-  };
-
-  const handleTreeCheck = (checkedKeys, e) => {
-    setCheckedKeys({
-      checked: checkedKeys,
-      halfCheckedKeys: e.halfCheckedKeys,
-    });
   };
 
   const handleSave = async () => {
     try {
+      const halfCheckedIds = collectHalfCheckedIds(treeData, checkedMenuIds);
       await api.post(`/api/admin/menuRole/${roleId}`, {
         roleId,
-        addMenuList: [...checkedKeys.checked, ...checkedKeys.halfCheckedKeys],
+        addMenuList: [...checkedMenuIds, ...halfCheckedIds],
         createdBy: user.userId,
       });
-      showSuccessToast("저장되었습니다.");
+      toast.success("저장되었습니다.");
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", {
+        description: error.response?.data?.message,
+      });
     }
-  };
-
-  const showSuccessToast = (message) => {
-    toast.success(message);
-  };
-
-  const showErrorToast = (error) => {
-    toast.error("문제가 발생하였습니다.", {
-      description: error.response?.data?.message,
-    });
   };
 
   useEffect(() => {
@@ -138,7 +116,7 @@ const MenuRole = () => {
       <div className="flex mb-5">
         <Select onValueChange={handleRoleChange}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="권한" />
+            <SelectValue placeholder="권한을 선택해 주세요" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -154,28 +132,22 @@ const MenuRole = () => {
 
       <Card>
         <CardContent className="mt-6">
-          {treeData && (
-            <Tree
-              ref={treeRef}
-              treeData={treeData}
-              checkable={true}
-              defaultExpandAll={true}
-              checkedKeys={checkedKeys}
-              onCheck={handleTreeCheck}
-            />
-          )}
-          {treeData === null && (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500">권한을 선택해 주세요</p>
+          {treeData.length === 0 ? (
+            <div className="text-center text-muted-foreground py-4">
+              권한을 선택해 주세요
             </div>
+          ) : (
+            <MenuCheckTree
+              nodes={treeData}
+              checked={checkedMenuIds}
+              onChange={setCheckedMenuIds}
+            />
           )}
         </CardContent>
       </Card>
 
       <div className="flex w-full justify-end pt-4">
-        <div className="items-end">
-          {roleId > 0 && <Button onClick={handleSave}>저장</Button>}
-        </div>
+        {roleId > 0 && <Button onClick={handleSave}>저장</Button>}
       </div>
     </div>
   );

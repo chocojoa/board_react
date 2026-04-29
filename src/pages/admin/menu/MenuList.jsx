@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import useAuthStore from "@/store/useAuthStore";
 import { useForm } from "react-hook-form";
-import Tree from "rc-tree";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useAxios from "@/hooks/useAxios";
@@ -21,8 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import MenuForm from "@/components/form/MenuForm";
-
-import "rc-tree/assets/index.css";
+import MenuTreeNode from "./MenuTreeNode";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +53,7 @@ const MenuList = () => {
     usageStatus: true,
     isDisplayed: true,
   };
+
   const createForm = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
@@ -65,90 +64,61 @@ const MenuList = () => {
     defaultValues: defaultFormValues,
   });
 
-  const buildTreeData = (menuId, menus) => {
+  const buildTree = (parentId, menus) => {
     return menus
-      .filter((menu) => menu.parentMenuId === menuId)
-      .map((menu) => {
-        const node = {
-          key: menu.menuId,
-          title: menu.menuName,
-          depth: menu.depth,
-          sortOrder: menu.sortOrder,
-          menuId: menu.menuId,
-          parentMenuId: menu.parentMenuId,
-        };
-
-        if (menu.childCount > 0) {
-          const children = buildTreeData(menu.menuId, menus);
-          if (children.length) {
-            node.children = children;
-          }
-        }
-
-        return node;
-      });
+      .filter((m) => m.parentMenuId === parentId)
+      .map((m) => ({ ...m, children: buildTree(m.menuId, menus) }));
   };
 
   const retrieveMenus = async () => {
     try {
-      const response = await api.get("/api/admin/menus");
-      const menus = response.data.data;
-      const treeNodes = buildTreeData(0, menus);
+      const { data } = await api.get("/api/admin/menus");
+      const menus = data.data;
       setTreeData([
-        {
-          key: 0,
-          title: "메뉴",
-          menuId: 0,
-          parentMenuId: 0,
-          children: treeNodes,
-        },
+        { menuId: 0, menuName: "메뉴", parentMenuId: 0, children: buildTree(0, menus) },
       ]);
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", { description: error.response?.data?.message });
     }
   };
 
   const retrieveMenuById = async (menuId) => {
     try {
-      const response = await api.get(`/api/admin/menus/${menuId}`);
-      const menu = response.data.data;
-      modifyForm.reset(menu);
+      const { data } = await api.get(`/api/admin/menus/${menuId}`);
+      modifyForm.reset(data.data);
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", { description: error.response?.data?.message });
     }
   };
 
   const handleCreateMenu = async (data) => {
     try {
       await api.post("/api/admin/menus", { ...data, userId: user.userId });
-      showSuccessToast("저장되었습니다.");
+      toast.success("저장되었습니다.");
       handleMenuChange();
       setDialogOpen(false);
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", { description: error.response?.data?.message });
     }
   };
 
   const handleModifyMenu = async (data) => {
     try {
-      await api.put(`/api/admin/menus/${data.menuId}`, {
-        ...data,
-        userId: user.userId,
-      });
-      showSuccessToast("수정되었습니다.");
+      await api.put(`/api/admin/menus/${data.menuId}`, { ...data, userId: user.userId });
+      toast.success("수정되었습니다.");
       handleMenuChange();
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", { description: error.response?.data?.message });
     }
   };
 
   const handleRemoveMenu = async () => {
     try {
       await api.delete(`/api/admin/menus/${selectedMenu}`);
-      showSuccessToast("삭제되었습니다.");
+      toast.success("삭제되었습니다.");
       handleMenuChange();
     } catch (error) {
-      showErrorToast(error);
+      toast.error("문제가 발생하였습니다.", { description: error.response?.data?.message });
     }
   };
 
@@ -158,120 +128,30 @@ const MenuList = () => {
     resetModifyForm();
   };
 
-  const handleTreeSelect = (selectedKeys, e) => {
-    if (e.selected) {
-      const menuId = selectedKeys[0];
+  const handleTreeSelect = (menuId) => {
+    if (selectedMenu === menuId) {
+      setSelectedMenu(-1);
+      resetModifyForm();
+    } else {
       setSelectedMenu(menuId);
       if (menuId > 0) {
         retrieveMenuById(menuId);
       }
-    } else {
-      setSelectedMenu(-1);
-      resetModifyForm();
     }
   };
 
   const resetModifyForm = () => {
     modifyForm.reset({
-      menuId: 0,
-      parentMenuId: selectedMenu,
-      menuName: "",
-      menuUrl: "",
-      sortOrder: "",
-      icon: "",
-      usageStatus: true,
-      isDisplayed: true,
+      ...defaultFormValues,
+      parentMenuId: selectedMenu > 0 ? selectedMenu : 0,
     });
   };
 
   const initNewMenu = () => {
     createForm.reset({
-      menuId: 0,
+      ...defaultFormValues,
       parentMenuId: selectedMenu,
-      menuName: "",
-      menuUrl: "",
-      sortOrder: "",
-      icon: "",
-      usageStatus: true,
-      isDisplayed: true,
     });
-  };
-
-  const showSuccessToast = (message) => {
-    toast.success(message);
-  };
-
-  const showErrorToast = (error) => {
-    toast.error("문제가 발생하였습니다.", {
-      description: error.response?.data?.message,
-    });
-  };
-
-  // menuId를 기준으로 객체를 삭제하는 함수
-  const deleteMenuById = (array, menuId) => {
-    return array.filter((item) => {
-      if (item.children && item.children.length > 0) {
-        item.children = deleteMenuById(item.children, menuId);
-      }
-      return item.menuId !== menuId;
-    });
-  };
-
-  // 특정 위치에 메뉴를 삽입하는 함수
-  const insertMenuById = (array, parentId, newMenu) => {
-    return array.map((item) => {
-      if (item.menuId === parentId) {
-        // 부모를 찾았으면 children에 삽입
-        return {
-          ...item,
-          children: [...item.children, newMenu],
-        };
-      }
-
-      // 재귀적으로 children에서 부모를 찾음
-      if (item.children && item.children.length > 0) {
-        return {
-          ...item,
-          children: insertMenuById(item.children, parentId, newMenu),
-        };
-      }
-
-      return item;
-    });
-  };
-
-  const handleTreeDrop = (event) => {
-    const menuId = event.dragNode.menuId;
-
-    const moveMenu = {
-      key: event.dragNode.key,
-      title: event.dragNode.title,
-      depth: event.dragNode.depth,
-      sortOrder: event.node.sortOrder + 1,
-      menuId: event.dragNode.menuId,
-      parentMenuId: event.node.parentMenuId,
-    };
-
-    const newParentMenuId = event.node.parentMenuId;
-    const dropMenuWithoutArray = deleteMenuById(treeData, menuId);
-    const newTreeData = insertMenuById(
-      dropMenuWithoutArray,
-      newParentMenuId,
-      moveMenu
-    );
-    modifyMenu(moveMenu);
-    setTreeData(newTreeData);
-  };
-
-  const modifyMenu = async (data) => {
-    try {
-      await api.put(`/api/admin/menus/${data.menuId}`, {
-        ...data,
-        userId: user.userId,
-      });
-    } catch (error) {
-      showErrorToast(error);
-    }
   };
 
   useEffect(() => {
@@ -317,16 +197,18 @@ const MenuList = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {treeData.length > 0 && (
-              <Tree
-                treeData={treeData}
-                onSelect={handleTreeSelect}
-                defaultExpandAll={true}
-                draggable
-                onDrop={handleTreeDrop}
-              />
-            )}
-            {treeData.length === 0 && (
+            {treeData.length > 0 ? (
+              <div>
+                {treeData.map((node) => (
+                  <MenuTreeNode
+                    key={node.menuId}
+                    node={node}
+                    selectedMenuId={selectedMenu}
+                    onSelect={handleTreeSelect}
+                  />
+                ))}
+              </div>
+            ) : (
               <div className="flex justify-center items-center h-full">
                 <p className="text-gray-500">메뉴가 없습니다.</p>
               </div>
@@ -349,9 +231,7 @@ const MenuList = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              삭제하시겠습니까?
-                            </AlertDialogTitle>
+                            <AlertDialogTitle>삭제하시겠습니까?</AlertDialogTitle>
                             <AlertDialogDescription>
                               삭제 시 하위 메뉴까지 삭제됩니다.
                             </AlertDialogDescription>
