@@ -1,7 +1,7 @@
+import { fileURLToPath } from "url";
 import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { fileURLToPath } from "url";
 import tailwindcss from "@tailwindcss/vite";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,9 +18,9 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        pathRewrite: { "^/api": "/" },
         target: "http://localhost:8080",
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "")
       },
     },
   },
